@@ -16,7 +16,7 @@ This guide covers all installation methods for BabaYaga, from quick setup to adv
 The easiest way to get started:
 
 ```bash
-git clone https://github.com/yourusername/babayaga.git
+git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
 npm run setup
@@ -35,7 +35,7 @@ Perfect for projects where multiple developers need the same tools:
 
 ```bash
 # In your project root
-git submodule add https://github.com/yourusername/babayaga.git
+git submodule add https://github.com/banditburai/babayaga.git
 git commit -m "Add BabaYaga browser automation tools"
 ```
 
@@ -50,6 +50,8 @@ cd ..
 #### Step 3: Create .mcp.json
 
 Create `.mcp.json` in your project root:
+
+> **Note**: As of June 2024, `.mcp.json` project-scoped configuration may not be automatically loaded by Claude Code. You may need to restart Claude Code or use the individual setup method if servers don't appear.
 
 ```json
 {
@@ -101,7 +103,7 @@ Install BabaYaga globally for personal use across all projects:
 ```bash
 mkdir -p ~/tools
 cd ~/tools
-git clone https://github.com/yourusername/babayaga.git
+git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
 ```
@@ -134,7 +136,7 @@ If you just want to try BabaYaga:
 
 ```bash
 # Clone anywhere
-git clone https://github.com/yourusername/babayaga.git
+git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
 

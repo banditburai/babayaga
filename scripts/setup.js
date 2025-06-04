@@ -74,8 +74,8 @@ async function setupProjectScope() {
     } else {
       console.log('\n⚠️  BabaYaga not found as a subdirectory.');
       console.log('Options:');
-      console.log('1. Add as git submodule: git submodule add https://github.com/yourusername/babayaga.git');
-      console.log('2. Clone directly: git clone https://github.com/yourusername/babayaga.git');
+      console.log('1. Add as git submodule: git submodule add https://github.com/banditburai/babayaga.git');
+      console.log('2. Clone directly: git clone https://github.com/banditburai/babayaga.git');
       console.log('3. Specify custom path\n');
       
       babayagaPath = await question('Enter path to BabaYaga (or press Enter to skip): ');
@@ -127,7 +127,9 @@ async function setupProjectScope() {
   console.log('\n📝 Next steps for team setup:');
   console.log('1. Ensure BabaYaga is installed: cd ' + babayagaPath + ' && npm install');
   console.log('2. Commit .mcp.json to your repository');
-  console.log('3. Team members will be prompted to approve servers on first use');
+  console.log('3. Restart Claude Code in this project directory to load the servers');
+  console.log('4. Team members will be prompted to approve servers on first use');
+  console.log('\n⚠️  Note: .mcp.json support may require Claude Code restart');
   console.log('\n💡 To start Chrome: cd ' + babayagaPath + ' && npm run chrome');
 }
 
@@ -161,25 +163,33 @@ async function setupUserScope() {
   }
   
   console.log('\n📝 Run these commands to add BabaYaga to your user configuration:\n');
+  console.log(`# First, navigate to the BabaYaga directory:`);
+  console.log(`cd ${babayagaDir}\n`);
+  
+  console.log(`# Then add the MCP servers:`);
   console.log(`claude mcp add puppeteer-babayaga -s user \\`);
-  console.log(`  "npm" "run" "start:puppeteer-mcp" \\`);
-  console.log(`  --cwd "${babayagaDir}"\n`);
+  console.log(`  "npm" "run" "start:puppeteer-mcp"\n`);
   
   console.log(`claude mcp add cdp-babayaga -s user \\`);
-  console.log(`  "npm" "run" "start:cdp-mcp" \\`);
-  console.log(`  --cwd "${babayagaDir}"\n`);
+  console.log(`  "npm" "run" "start:cdp-mcp"\n`);
   
   console.log('💡 These servers will be available in ALL your Claude Code projects');
-  console.log(`💡 To start Chrome: cd ${babayagaDir} && npm run chrome`);
+  console.log(`💡 To start Chrome: npm run chrome`);
   
   const runCommands = await question('\nWould you like to run these commands now? (y/n): ');
   if (runCommands.toLowerCase() === 'y') {
     try {
       console.log('\nAdding Puppeteer MCP server...');
-      execSync(`claude mcp add puppeteer-babayaga -s user "npm" "run" "start:puppeteer-mcp" --cwd "${babayagaDir}"`, { stdio: 'inherit' });
+      execSync(`claude mcp add puppeteer-babayaga -s user "npm" "run" "start:puppeteer-mcp"`, { 
+        stdio: 'inherit',
+        cwd: babayagaDir
+      });
       
       console.log('\nAdding CDP MCP server...');
-      execSync(`claude mcp add cdp-babayaga -s user "npm" "run" "start:cdp-mcp" --cwd "${babayagaDir}"`, { stdio: 'inherit' });
+      execSync(`claude mcp add cdp-babayaga -s user "npm" "run" "start:cdp-mcp"`, { 
+        stdio: 'inherit',
+        cwd: babayagaDir
+      });
       
       console.log('\n✅ Successfully added BabaYaga servers to user configuration!');
     } catch (error) {

@@ -26,7 +26,7 @@ BabaYaga provides AI agents with browser automation superpowers through the Mode
 
 ```bash
 # Clone BabaYaga
-git clone https://github.com/yourusername/babayaga.git
+git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 
 # Install dependencies
@@ -47,7 +47,7 @@ Add BabaYaga to your project so your entire team has access:
 
 ```bash
 # In your project directory
-git submodule add https://github.com/yourusername/babayaga.git
+git submodule add https://github.com/banditburai/babayaga.git
 cd babayaga && npm install && cd ..
 
 # Run setup to generate .mcp.json
@@ -85,18 +85,16 @@ Install BabaYaga globally for use across all your projects:
 # Clone to your preferred location
 mkdir -p ~/tools
 cd ~/tools
-git clone https://github.com/yourusername/babayaga.git
+git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
 
 # Add to your user configuration
 claude mcp add puppeteer-babayaga -s user \
-  "npm" "run" "start:puppeteer-mcp" \
-  --cwd "$PWD"
+  "npm" "run" "start:puppeteer-mcp"
 
 claude mcp add cdp-babayaga -s user \
-  "npm" "run" "start:cdp-mcp" \
-  --cwd "$PWD"
+  "npm" "run" "start:cdp-mcp"
 ```
 
 ## Usage
@@ -203,6 +201,11 @@ babayaga/
 - 🤖 [Tools Reference](docs/tools-reference.md) - Complete guide to all MCP tools
 - 🧪 [E2E Test Examples](docs/example-e2e-test.md) - Real-world usage scenarios
 - 🏗️ [Architecture Overview](docs/architecture-diagram.md) - System design and data flow
+
+## Known Issues
+
+- **`.mcp.json` Auto-loading**: Project-scoped MCP configuration via `.mcp.json` may not be automatically detected by Claude Code. Use the individual setup method or restart Claude Code if servers don't appear.
+- **Chrome Port Conflicts**: If port 9222 is already in use, modify the `--remote-debugging-port` in `scripts/chrome.js`
 
 ## Contributing
 
