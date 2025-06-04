@@ -1,0 +1,58 @@
+{
+  "name": "babayaga",
+  "version": "1.0.0",
+  "description": "An agentic web testing framework combining Puppeteer and Chrome DevTools Protocol through MCP",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/banditburai/babayaga.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:puppeteer-mcp": "tsx src/start-puppeteer-mcp.ts",
+    "start:cdp-mcp": "tsx src/start-cdp-mcp.ts --port=9222",
+    "serve:test-app": "npx http-server test-app -p 8888",
+    "dev": "npm-run-all --parallel serve:test-app start:*",
+    "start": "node scripts/start-all.js",
+    "test:servers": "node scripts/test-servers.js",
+    "test:e2e": "node scripts/test-e2e.js",
+    "chrome": "node scripts/start-chrome.js",
+    "setup": "node scripts/setup.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "puppeteer",
+    "chrome-devtools-protocol",
+    "cdp",
+    "browser-automation",
+    "web-testing",
+    "ai-testing",
+    "claude",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22.15.29",
+    "eslint": "^9.28.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@types/express": "^5.0.2",
+    "@types/ws": "^8.18.1",
+    "chrome-remote-interface": "^0.33.3",
+    "express": "^5.1.0",
+    "puppeteer": "^24.10.0",
+    "puppeteer-mcp-server": "^0.7.2",
+    "ws": "^8.18.2"
+  }
+}

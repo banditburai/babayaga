@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "puppeteer-babayaga": {
+      "command": "npm",
+      "args": ["run", "start:puppeteer-mcp"],
+      "cwd": "./babayaga",
+      "env": {}
+    },
+    "cdp-babayaga": {
+      "command": "npm",
+      "args": ["run", "start:cdp-mcp"],
+      "cwd": "./babayaga",
+      "env": {}
+    }
+  }
+}

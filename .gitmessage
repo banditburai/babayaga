@@ -1,0 +1,19 @@
+# Commit Message Format
+# 
+# <type>: <subject>
+#
+# Types:
+# - feat: New feature
+# - fix: Bug fix
+# - docs: Documentation only changes
+# - style: Code style changes (formatting, etc)
+# - refactor: Code change that neither fixes a bug nor adds a feature
+# - test: Adding missing tests
+# - chore: Changes to build process or auxiliary tools
+#
+# Example:
+# feat: add CDP tool for network inspection
+#
+# Keep subject line under 50 characters
+# Use imperative mood ("add" not "added")
+# Don't end with a period

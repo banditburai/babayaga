@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BabaYaga Test Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        #headerBanner {
+            background-color: #3498db;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #logButton {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        #errorButton {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        #changeStyleButton {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        input[type="text"] {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+        
+        #output {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            min-height: 50px;
+        }
+        
+        .console-section {
+            font-family: monospace;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="headerBanner">
+        <h1>BabaYaga Test Application</h1>
+        <p>Testing Puppeteer MCP and CDP MCP Integration</p>
+    </div>
+
+    <div class="section">
+        <h2>Console Logging Tests</h2>
+        <button id="logButton" onclick="handleLogClick()">Log Success Message</button>
+        <button id="errorButton" onclick="handleErrorClick()">Log Error Message</button>
+        <button onclick="handleWarnClick()">Log Warning Message</button>
+    </div>
+
+    <div class="section">
+        <h2>Style Manipulation Tests</h2>
+        <button id="changeStyleButton" onclick="changeHeaderStyle()">Change Header Color</button>
+        <button onclick="resetHeaderStyle()">Reset Header Style</button>
+    </div>
+
+    <div class="section">
+        <h2>Interactive Elements</h2>
+        <input type="text" id="userInput" placeholder="Enter some text...">
+        <button onclick="processInput()">Process Input</button>
+        <div id="output"></div>
+    </div>
+
+    <div class="section">
+        <h2>Console Output</h2>
+        <div id="consoleOutput" class="console-section">
+            <div>Console messages will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Intercept console methods to display in UI
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addToConsoleOutput(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#e74c3c' : type === 'warn' ? '#f39c12' : '#2ecc71';
+            div.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsoleOutput(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsoleOutput(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsoleOutput(args.join(' '), 'warn');
+        };
+
+        // Test functions
+        function handleLogClick() {
+            console.log('Button clicked successfully');
+        }
+
+        function handleErrorClick() {
+            console.error('This is a test error message');
+        }
+
+        function handleWarnClick() {
+            console.warn('This is a test warning message');
+        }
+
+        function changeHeaderStyle() {
+            const header = document.getElementById('headerBanner');
+            header.style.backgroundColor = 'blue';
+            console.log('Header background changed to blue');
+        }
+
+        function resetHeaderStyle() {
+            const header = document.getElementById('headerBanner');
+            header.style.backgroundColor = '#3498db';
+            console.log('Header background reset to original color');
+        }
+
+        function processInput() {
+            const input = document.getElementById('userInput');
+            const output = document.getElementById('output');
+            const value = input.value.trim();
+            
+            if (value) {
+                output.textContent = `Processed: ${value.toUpperCase()}`;
+                console.log(`User input processed: "${value}"`);
+            } else {
+                output.textContent = 'Please enter some text';
+                console.warn('No input provided');
+            }
+        }
+
+        // Log initial page load
+        console.log('BabaYaga Test Application loaded successfully');
+    </script>
+</body>
+</html>
