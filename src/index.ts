@@ -3,12 +3,20 @@
 import { UnifiedBabaYaga } from './UnifiedBabaYaga.js';
 
 async function main() {
-  const babayaga = new UnifiedBabaYaga({
+  const config: any = {
     headless: process.env.HEADLESS === 'true',
     screenshotPath: process.env.SCREENSHOT_PATH || './screenshots',
-    browserArgs: process.env.BROWSER_ARGS?.split(',') || undefined,
-    startUrl: process.env.START_URL || undefined,
-  });
+  };
+  
+  // Only add optional properties if they have values
+  if (process.env.BROWSER_ARGS) {
+    config.browserArgs = process.env.BROWSER_ARGS.split(',');
+  }
+  if (process.env.START_URL) {
+    config.startUrl = process.env.START_URL;
+  }
+  
+  const babayaga = new UnifiedBabaYaga(config);
 
   // Handle shutdown gracefully
   process.on('SIGINT', async () => {
