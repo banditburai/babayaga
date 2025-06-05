@@ -86,8 +86,9 @@ export class BabaYagaMCPServer {
           throw new Error(`Service ${tool.service} not available`);
         }
         
-        // Remove service prefix from tool name
-        const originalToolName = name.replace(`${tool.service}_`, '');
+        // Remove service prefix from tool name (only from the beginning)
+        const prefix = `${tool.service}_`;
+        const originalToolName = name.startsWith(prefix) ? name.substring(prefix.length) : name;
         const response = await service.callTool(originalToolName, args);
         
         // Check if response is large and needs streaming
@@ -263,6 +264,9 @@ export class BabaYagaMCPServer {
         }
       }
       
+      // Auto-connect Puppeteer to existing Chrome instance
+      await this.autoConnectPuppeteer();
+      
       // Register built-in tools
       this.toolRegistry.register({
         name: 'visual-regression',
@@ -393,6 +397,35 @@ export class BabaYagaMCPServer {
         reject(new Error('Failed to start Chrome within 30 seconds'));
       }, 30000);
     });
+  }
+
+  private async autoConnectPuppeteer(): Promise<void> {
+    const puppeteerService = this.serviceDiscovery.getService('puppeteer');
+    if (!puppeteerService) {
+      console.log('Puppeteer service not available, skipping auto-connect');
+      return;
+    }
+
+    try {
+      // Check if Chrome is running and has tabs
+      const port = process.env.CHROME_DEBUG_PORT || '9222';
+      const response = await fetch(`http://localhost:${port}/json`);
+      const tabs = await response.json() as Array<{ id: string; type: string; url: string }>;
+      
+      if (tabs.length === 0) {
+        console.log('No Chrome tabs available, creating new tab for Puppeteer connection');
+        // Create a new tab
+        await fetch(`http://localhost:${port}/json/new?about:blank`);
+      }
+
+      // Connect Puppeteer to the existing Chrome instance
+      console.log('Connecting Puppeteer to existing Chrome instance...');
+      await puppeteerService.callTool('connect_active_tab', {});
+      console.log('Puppeteer connected to Chrome successfully');
+    } catch (error) {
+      console.warn('Failed to auto-connect Puppeteer to Chrome:', error instanceof Error ? error.message : error);
+      console.log('Puppeteer will attempt to launch its own browser instance');
+    }
   }
 
   async shutdown() {

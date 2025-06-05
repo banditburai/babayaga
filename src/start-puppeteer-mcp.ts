@@ -16,7 +16,10 @@ async function main() {
     stdio: 'inherit',
     env: {
       ...process.env,
-      // Add any environment variables if needed
+      // Configure Puppeteer to connect to existing Chrome on port 9222
+      PUPPETEER_BROWSER_WEBSOCKET_ENDPOINT: 'ws://localhost:9222',
+      PUPPETEER_CONNECT_MODE: 'true',
+      CHROME_DEBUG_PORT: process.env.CHROME_DEBUG_PORT || '9222',
     },
   });
 

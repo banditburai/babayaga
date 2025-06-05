@@ -35,10 +35,15 @@ export class ToolRegistryImpl implements ToolRegistry {
   // Import tools from an MCP service
   async importFromService(serviceName: string, tools: Tool[]): Promise<void> {
     for (const tool of tools) {
+      // Check if tool name already starts with service prefix to prevent double-prefixing
+      const toolName = tool.name.startsWith(`${serviceName}_`) 
+        ? tool.name 
+        : `${serviceName}_${tool.name}`;
+      
       const babaYagaTool: BabaYagaTool = {
         ...tool,
         service: serviceName as any,
-        name: `${serviceName}_${tool.name}`, // Prefix with service name
+        name: toolName,
       };
       this.register(babaYagaTool);
     }
@@ -49,7 +54,7 @@ export class ToolRegistryImpl implements ToolRegistry {
     const compositeTools: BabaYagaTool[] = [];
 
     // Example: Create a comprehensive web test tool
-    if (this.tools.has('puppeteer_screenshot') && this.tools.has('cdp_cdp_command')) {
+    if (this.tools.has('puppeteer_screenshot') && (this.tools.has('cdp_cdp_command') || this.tools.has('cdp_command'))) {
       compositeTools.push({
         name: 'web_performance_test',
         description: 'Comprehensive web performance test with screenshots and metrics',

@@ -66,11 +66,14 @@ export class ToolChainExecutor {
         }
         
         // Execute tool
-        const toolResponse = await service.callTool(step.tool, processedParams);
+        // Remove service prefix from tool name (only from the beginning)
+        const prefix = `${step.service}_`;
+        const originalToolName = step.tool.startsWith(prefix) ? step.tool.substring(prefix.length) : step.tool;
+        const toolResponse = await service.callTool(originalToolName, processedParams);
         
         // Apply transformations
         const transformedResponse = await this.transformers.transform({
-          toolName: step.tool,
+          toolName: originalToolName,
           serviceName: step.service,
           originalResponse: toolResponse,
           metadata: processedParams,
@@ -200,13 +203,13 @@ export const PREDEFINED_CHAINS: ChainDefinition[] = [
     steps: [
       {
         service: 'puppeteer',
-        tool: 'navigate',
+        tool: 'puppeteer_navigate',
         params: { url: '${url}' },
         outputKey: 'navigation',
       },
       {
         service: 'puppeteer',
-        tool: 'screenshot',
+        tool: 'puppeteer_screenshot',
         params: { name: 'initial-state' },
         outputKey: 'screenshot',
       },
@@ -242,7 +245,7 @@ export const PREDEFINED_CHAINS: ChainDefinition[] = [
       },
       {
         service: 'puppeteer',
-        tool: 'evaluate',
+        tool: 'puppeteer_evaluate',
         params: {
           script: `
             (() => {
@@ -284,18 +287,18 @@ export const PREDEFINED_CHAINS: ChainDefinition[] = [
     steps: [
       {
         service: 'puppeteer',
-        tool: 'navigate',
+        tool: 'puppeteer_navigate',
         params: { url: '${url}' },
       },
       {
         service: 'puppeteer',
-        tool: 'click',
+        tool: 'puppeteer_click',
         params: { selector: '${targetSelector}' },
         outputKey: 'clickResult',
       },
       {
         service: 'puppeteer',
-        tool: 'wait_for_selector',
+        tool: 'puppeteer_wait_for_selector',
         params: { 
           selector: '${expectedSelector}',
           options: { timeout: 5000 },
@@ -307,7 +310,7 @@ export const PREDEFINED_CHAINS: ChainDefinition[] = [
       },
       {
         service: 'puppeteer',
-        tool: 'screenshot',
+        tool: 'puppeteer_screenshot',
         params: { name: 'after-interaction' },
         outputKey: 'finalScreenshot',
       },
