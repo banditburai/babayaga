@@ -1,5 +1,5 @@
 import { ServiceConfig, MCPService } from '../types/mcp';
-import { PooledMCPService, ConnectionPoolConfig } from './connection-pool';
+import { PooledMCPService } from './connection-pool';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { WebSocketClientTransport } from '@modelcontextprotocol/sdk/client/websocket.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -7,7 +7,7 @@ import { spawn, ChildProcess } from 'child_process';
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
 export class ServiceDiscovery {
-  private services: Map<string, MCPServiceImpl> = new Map();
+  private services: Map<string, MCPService> = new Map();
   private config: ServiceConfig[];
 
   constructor(config: ServiceConfig[]) {

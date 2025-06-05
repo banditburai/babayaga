@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema, Tool } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { ServiceDiscovery } from '../utils/service-discovery';
 import { ToolRegistryImpl } from './tools/registry';
-import { ServiceConfig, ToolResponse, CDPCommandParams, VisualRegressionParams } from '../types/mcp';
+import { ServiceConfig, ToolResponse, VisualRegressionParams } from '../types/mcp';
 import { VisualRegressionTool } from './tools/builtin/visual-regression';
 import { createDefaultTransformers, TransformerChain } from './tools/transformers';
 import { CompositeToolManager } from './tools/composite';
@@ -13,7 +13,6 @@ import { ToolChainExecutor, PREDEFINED_CHAINS } from './tools/chaining';
 import fs from 'fs/promises';
 import path from 'path';
 import { spawn } from 'child_process';
-import { platform } from 'os';
 
 export class BabaYagaMCPServer {
   private server: Server;
@@ -53,11 +52,11 @@ export class BabaYagaMCPServer {
     // Handle tool listing
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       const tools = this.toolRegistry.getTools();
-      return { tools };
+      return { tools } as const;
     });
 
     // Handle tool calls
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async (request): Promise<any> => {
       const { name, arguments: args } = request.params;
       
       if (!args) {
@@ -102,7 +101,11 @@ export class BabaYagaMCPServer {
       // Handle built-in tools
       switch (name) {
         case 'visual-regression':
-          return await this.handleVisualRegression(args as VisualRegressionParams);
+          const { url, baselineName } = args as Record<string, any>;
+          if (!url || !baselineName) {
+            throw new Error('Missing required parameters for visual-regression');
+          }
+          return await this.handleVisualRegression({ url, baselineName });
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -302,7 +305,7 @@ export class BabaYagaMCPServer {
     try {
       const response = await fetch(`http://localhost:${port}/json/version`);
       if (response.ok) {
-        const version = await response.json();
+        const version = await response.json() as { Browser: string };
         console.log(`Chrome already running: ${version.Browser}`);
         return;
       }

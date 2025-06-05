@@ -1,4 +1,3 @@
-import { Readable } from 'stream';
 import { ToolResponse } from '../../types/mcp';
 
 export interface StreamingContext {
@@ -99,6 +98,7 @@ export class StreamingResponseHandler {
   
   // Create a streaming tool response for real-time data
   createStreamGenerator(dataSource: AsyncIterable<any>): AsyncGenerator<ToolResponse> {
+    const chunkSize = this.CHUNK_SIZE;
     return (async function* () {
       let buffer = '';
       let chunkCount = 0;
@@ -109,7 +109,7 @@ export class StreamingResponseHandler {
         buffer += chunkData;
         
         // Yield chunks periodically
-        if (buffer.length >= this.CHUNK_SIZE || chunkCount % 10 === 0) {
+        if (buffer.length >= chunkSize || chunkCount % 10 === 0) {
           yield {
             content: [{
               type: 'text',
@@ -138,13 +138,12 @@ export class StreamingResponseHandler {
           }],
         };
       }
-    }).bind(this)();
+    })();
   }
 }
 
 // Example usage for streaming CDP events
 export class CDPEventStreamer {
-  private streamingHandler = new StreamingResponseHandler();
   
   async *streamCDPEvents(cdpClient: any, eventNames: string[]): AsyncGenerator<ToolResponse> {
     const events: any[] = [];

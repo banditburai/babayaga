@@ -25,7 +25,7 @@ export class CompositeToolManager {
     // Visual Regression with Metrics
     this.handlers.set('visual_regression_with_metrics', {
       name: 'visual_regression_with_metrics',
-      execute: async (params) => {
+      execute: async () => {
         // This will be handled by the existing visual regression tool
         // but could be enhanced here with additional metrics
         return {
