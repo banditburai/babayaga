@@ -415,7 +415,7 @@ export class BabaYagaMCPServer {
       if (tabs.length === 0) {
         console.log('No Chrome tabs available, creating new tab for Puppeteer connection');
         // Create a new tab
-        await fetch(`http://localhost:${port}/json/new?about:blank`);
+        await fetch(`http://localhost:${port}/json/new?http://localhost:8888`);
       }
 
       // Connect Puppeteer to the existing Chrome instance
