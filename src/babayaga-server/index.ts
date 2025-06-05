@@ -196,8 +196,6 @@ export class BabaYagaMCPServer {
             return await this.chainExecutor.executeChain(chain, args);
           }
         }
-
-      default:
         throw new Error(`Unknown composite tool: ${toolName}`);
     }
   }
