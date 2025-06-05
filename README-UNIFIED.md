@@ -77,6 +77,7 @@ Environment variables:
 - `HEADLESS` - Run browser in headless mode
 - `SCREENSHOT_PATH` - Directory for screenshots
 - `BROWSER_ARGS` - Comma-separated browser arguments
+- `START_URL` - URL to navigate to on startup (defaults to https://wikipedia.org)
 
 ## Development
 

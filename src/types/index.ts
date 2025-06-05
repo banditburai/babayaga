@@ -5,6 +5,7 @@ export interface BabaYagaConfig {
   headless?: boolean;
   browserArgs?: string[];
   defaultViewport?: Viewport | null;
+  startUrl?: string;
   
   // Tool settings
   screenshotPath?: string;

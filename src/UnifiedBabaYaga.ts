@@ -27,6 +27,7 @@ export class UnifiedBabaYaga {
       enablePerformanceTools: true,
       serverName: 'babayaga-unified',
       serverVersion: '1.0.0',
+      startUrl: 'https://wikipedia.org',
       ...config
     };
     
@@ -70,6 +71,12 @@ export class UnifiedBabaYaga {
 
     // Set up page event listeners
     this.setupPageListeners();
+    
+    // Navigate to start URL if provided
+    if (this.config.startUrl) {
+      console.log(`📍 Navigating to ${this.config.startUrl}...`);
+      await this.page.goto(this.config.startUrl, { waitUntil: 'networkidle2' });
+    }
     
     console.log('✅ Browser launched');
   }

@@ -7,6 +7,7 @@ async function main() {
     headless: process.env.HEADLESS === 'true',
     screenshotPath: process.env.SCREENSHOT_PATH || './screenshots',
     browserArgs: process.env.BROWSER_ARGS?.split(',') || undefined,
+    startUrl: process.env.START_URL || undefined,
   });
 
   // Handle shutdown gracefully
