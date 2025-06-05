@@ -26,4 +26,5 @@ export function createDefaultTransformers(): TransformerChain {
   return chain;
 }
 
-export { TransformerChain, ResponseTransformer, TransformContext } from './base';
+export { TransformerChain, ResponseTransformer } from './base';
+export type { TransformContext } from './base';
