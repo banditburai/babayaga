@@ -13,14 +13,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:puppeteer-mcp": "tsx src/start-puppeteer-mcp.ts",
-    "start:cdp-mcp": "tsx src/start-cdp-mcp.ts --port=9222",
+    "start:cdp-mcp": "tsx src/start-devtools-mcp.ts",
     "serve:test-app": "npx http-server test-app -p 8888",
     "dev": "npm-run-all --parallel serve:test-app start:*",
     "start": "node scripts/start-all.js",
-    "test:servers": "node scripts/test-servers.js",
+    "test:servers": "tsx src/test-servers.ts",
     "test:e2e": "node scripts/test-e2e.js",
     "chrome": "node scripts/start-chrome.js",
-    "setup": "node scripts/setup.js"
+    "setup": "node scripts/setup.js",
+    "visual-regression": "tsx src/babayaga-server/tools/builtin/visual-regression.ts",
+    "start:babayaga": "tsx src/babayaga-server/index.ts"
   },
   "keywords": [
     "mcp",
@@ -39,6 +41,8 @@
   "type": "module",
   "devDependencies": {
     "@types/node": "^22.15.29",
+    "@types/pixelmatch": "^5.2.4",
+    "@types/pngjs": "^6.0.3",
     "eslint": "^9.28.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
@@ -50,7 +54,10 @@
     "@types/express": "^5.0.2",
     "@types/ws": "^8.18.1",
     "chrome-remote-interface": "^0.33.3",
+    "devtools-mcp": "github:banditburai/devtools-mcp",
     "express": "^5.1.0",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
     "puppeteer": "^24.10.0",
     "puppeteer-mcp-server": "^0.7.2",
     "ws": "^8.18.2"

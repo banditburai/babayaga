@@ -1,6 +1,6 @@
 # 🔮 BabaYaga
 
-> Powerful browser automation tools for Claude Code - available to your entire team or just for you
+> Unified browser automation coordinator for Claude - combining Puppeteer and Chrome DevTools Protocol through a single MCP interface
 
 [![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -9,16 +9,18 @@
 
 ## What is BabaYaga?
 
-BabaYaga provides AI agents with browser automation superpowers through the Model Context Protocol (MCP). It combines Puppeteer for high-level automation with Chrome DevTools Protocol for deep inspection - perfect for testing, web scraping, and automated QA.
+BabaYaga is a powerful MCP server that coordinates browser automation tools, providing AI agents with unified access to both Puppeteer and Chrome DevTools Protocol capabilities. It acts as an intelligent orchestrator, offering composite tools, response transformations, and advanced features like tool chaining and connection pooling.
 
 ### ✨ Key Features
 
-- 🤝 **Team-friendly** - Share browser automation tools with your entire team via `.mcp.json`
-- 👤 **Personal use** - Install globally for use across all your projects
-- 🤖 **Dual MCP servers** - Puppeteer for automation, CDP for inspection
-- 🌐 **Cross-platform** - Works on macOS, Windows, and Linux
-- 🔧 **13 powerful tools** - Screenshots, console logs, element inspection, and more
-- 📦 **Easy setup** - Interactive installer for both team and individual use
+- 🎯 **Unified Interface** - Single MCP server coordinating multiple browser automation services
+- 🔗 **Tool Chaining** - Execute complex multi-step workflows with conditional logic
+- 🔄 **Response Transformations** - Automatic formatting and standardization of tool outputs
+- 🚀 **Connection Pooling** - High-performance CDP connection management
+- 🛠️ **Composite Tools** - Pre-built workflows combining Puppeteer and CDP capabilities
+- 📊 **Visual Regression** - Built-in screenshot comparison and performance metrics
+- 🌊 **Streaming Support** - Handle large responses efficiently
+- 🔧 **Flexible Architecture** - Run services independently or let BabaYaga manage them
 
 ## Installation
 
@@ -36,205 +38,228 @@ npm install
 npm run setup
 ```
 
-The setup wizard will help you choose between:
-1. **Team Setup** - Adds BabaYaga to your project for team sharing
-2. **Individual Setup** - Installs globally for personal use
-3. **Both** - Configure for team AND personal use
+### 🤖 Claude Integration
 
-### 👥 Team Setup (Recommended for Projects)
+Add BabaYaga to your Claude desktop configuration:
 
-Add BabaYaga to your project so your entire team has access:
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-```bash
-# In your project directory
-git submodule add https://github.com/banditburai/babayaga.git
-cd babayaga && npm install && cd ..
-
-# Run setup to generate .mcp.json
-npx babayaga/scripts/setup.js
-```
-
-This creates `.mcp.json` in your project:
 ```json
 {
   "mcpServers": {
-    "puppeteer-babayaga": {
+    "babayaga": {
       "command": "npm",
-      "args": ["run", "start:puppeteer-mcp"],
-      "cwd": "./babayaga"
-    },
-    "cdp-babayaga": {
-      "command": "npm",
-      "args": ["run", "start:cdp-mcp"],
-      "cwd": "./babayaga"
+      "args": ["run", "start:babayaga"],
+      "cwd": "/path/to/babayaga"
     }
   }
 }
 ```
 
-**Team members** just need to:
-1. Clone your repository (including the submodule)
-2. Approve the MCP servers when Claude Code prompts them
-3. Start using BabaYaga tools immediately!
-
-### 👤 Individual Setup (For Personal Use)
-
-Install BabaYaga globally for use across all your projects:
-
-```bash
-# Clone to your preferred location
-mkdir -p ~/tools
-cd ~/tools
-git clone https://github.com/banditburai/babayaga.git
-cd babayaga
-npm install
-
-# Add to your user configuration
-claude mcp add puppeteer-babayaga -s user \
-  "npm" "run" "start:puppeteer-mcp"
-
-claude mcp add cdp-babayaga -s user \
-  "npm" "run" "start:cdp-mcp"
-```
-
 ## Usage
 
-### Start Chrome with Debugging
-
-Before using BabaYaga tools, start Chrome:
+### Starting BabaYaga
 
 ```bash
-# From your project (team setup)
-cd babayaga && npm run chrome
+# Option 1: Let BabaYaga handle everything (recommended)
+npm run start:babayaga
+# BabaYaga will automatically start Chrome if needed
 
-# From global installation (individual setup)
-cd ~/tools/babayaga && npm run chrome
+# Option 2: Start Chrome manually first
+npm run chrome
+# Then in another terminal:
+npm run start:babayaga
+
+# Option 3: Disable auto-start
+BABAYAGA_AUTO_START_CHROME=false npm run start:babayaga
 ```
+
+BabaYaga automatically:
+- Checks if Chrome is running with debugging enabled
+- Starts Chrome if needed (unless disabled)
+- Manages Puppeteer and CDP services
 
 ### Available Tools
 
-#### 🎭 Puppeteer Tools
+#### 🎭 Puppeteer Tools (via BabaYaga)
 | Tool | Description |
 |------|-------------|
-| `puppeteer_connect_active_tab` | Connect to existing Chrome instance |
-| `puppeteer_navigate` | Navigate to a URL |
+| `puppeteer_connect` | Connect to Chrome instance |
+| `puppeteer_navigate` | Navigate to URLs |
 | `puppeteer_screenshot` | Capture screenshots |
 | `puppeteer_click` | Click elements |
-| `puppeteer_fill` | Fill input fields |
+| `puppeteer_fill` | Fill form inputs |
 | `puppeteer_select` | Select dropdown options |
 | `puppeteer_hover` | Hover over elements |
 | `puppeteer_evaluate` | Execute JavaScript |
 
-#### 🔍 CDP Tools
+#### 🔍 CDP Tools (via BabaYaga)
 | Tool | Description |
 |------|-------------|
-| `cdp_connect` | Connect to Chrome DevTools |
-| `cdp_list_targets` | List all browser tabs |
-| `cdp_evaluate` | Execute JavaScript via CDP |
-| `cdp_get_console_messages` | Retrieve console logs |
-| `cdp_get_computed_style` | Inspect element styles |
+| `cdp_command` | Execute any Chrome DevTools Protocol command |
 
-### Example Claude Code Usage
+#### 🎯 Composite Tools
+| Tool | Description |
+|------|-------------|
+| `visual-regression` | Compare screenshots with baselines |
+| `web_performance_test` | Comprehensive performance analysis |
+| `chain_full_page_analysis` | Complete page analysis workflow |
+| `chain_interactive_test_flow` | Test interactive elements |
+
+### Example Usage in Claude
 
 ```
-# Test your local development server
-Using the puppeteer-babayaga tool, navigate to http://localhost:3000
-Using the puppeteer-babayaga tool, take a screenshot named "homepage"
-Using the cdp-babayaga tool, get console messages
+# Basic navigation and screenshot
+Use babayaga to navigate to https://example.com
+Use babayaga to take a screenshot named "homepage"
 
-# Click and verify
-Using the puppeteer-babayaga tool, click selector button.submit
-Using the cdp-babayaga tool, evaluate document.querySelector('.success-message').textContent
+# Performance testing
+Use babayaga's web_performance_test tool with url "https://example.com" and metrics ["performance", "console", "network"]
 
-# Debug styling issues
-Using the cdp-babayaga tool, get computed style for selector .header
+# Visual regression testing
+Use babayaga's visual-regression tool to compare https://example.com with baseline "prod-homepage"
+
+# Execute CDP commands
+Use babayaga's cdp_command tool with method "Performance.getMetrics"
+
+# Run a full page analysis chain
+Use babayaga's chain_full_page_analysis tool with url "https://example.com"
 ```
 
 ## Architecture
 
-```mermaid
-graph LR
-    A[AI Agent] -->|MCP| B[Claude Code]
-    B --> C[Puppeteer MCP Server]
-    B --> D[CDP MCP Server]
-    C --> E[Chrome Browser]
-    D --> E
-    E --> F[Web Application]
-    
-    style A fill:#f9f9f9,stroke:#333,stroke-width:2px,color:#000
-    style B fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
-    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    style D fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    style E fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
-    style F fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+BabaYaga uses a modern service-oriented architecture:
+
 ```
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
+│   Claude    │────▶│   BabaYaga   │────▶│ Puppeteer MCP   │
+└─────────────┘     │ (Coordinator)│     └─────────────────┘
+                    │              │
+                    │  • Registry  │     ┌─────────────────┐
+                    │  • Transform │────▶│    CDP MCP      │
+                    │  • Chaining  │     └─────────────────┘
+                    │  • Pooling   │
+                    └──────────────┘
+```
+
+### Advanced Configuration
+
+Create a `babayaga.config.json` for custom setups:
+
+```json
+{
+  "services": [
+    {
+      "name": "cdp",
+      "url": "ws://localhost:3001",
+      "useConnectionPool": true,
+      "poolConfig": {
+        "minConnections": 2,
+        "maxConnections": 10
+      }
+    }
+  ]
+}
+```
+
+## Advanced Features
+
+### Tool Chaining
+
+Execute complex workflows with conditional logic:
+
+```javascript
+// Example chain definition
+{
+  "name": "full_page_analysis",
+  "steps": [
+    { "service": "puppeteer", "tool": "navigate", "params": { "url": "${url}" } },
+    { "service": "puppeteer", "tool": "screenshot", "outputKey": "screenshot" },
+    { "service": "cdp", "tool": "cdp_command", "params": { "method": "Performance.getMetrics" }, "outputKey": "metrics" }
+  ]
+}
+```
+
+### Response Transformations
+
+BabaYaga automatically transforms responses for better readability:
+- CDP metrics are grouped by category
+- Binary outputs are saved to files with metadata
+- Console messages are formatted with timestamps
+- Large responses are streamed or saved to disk
+
+### Connection Pooling
+
+For high-performance scenarios, enable connection pooling for CDP:
+- Maintains multiple persistent connections
+- Automatic health checks and reconnection
+- Configurable pool size and timeouts
 
 ## Testing
 
 ```bash
-# Test MCP server connectivity
-npm run test:servers
-
-# Run E2E test suite (requires Chrome)
-npm run test:e2e
-
 # Type checking
 npx tsc --noEmit
+
+# Test server connectivity
+npm run test:servers
+
+# Run E2E tests
+npm run test:e2e
 ```
 
 ## Project Structure
 
 ```
 babayaga/
-├── .mcp.json.example      # Example team configuration
-├── src/                   # Source code
-│   ├── cdp-mcp-server/   # CDP MCP implementation
-│   └── start-*.ts        # Server launchers
-├── scripts/              # Setup and utility scripts
-├── test-app/             # Interactive test application
-└── docs/                 # Additional documentation
+├── src/
+│   ├── babayaga-server/      # Main coordinator server
+│   │   ├── index.ts          # Server entry point
+│   │   └── tools/            # Tool infrastructure
+│   │       ├── registry.ts   # Tool registry
+│   │       ├── builtin/      # Built-in tools
+│   │       ├── composite/    # Composite tools
+│   │       ├── transformers/ # Response transformers
+│   │       ├── chaining.ts   # Tool chain executor
+│   │       └── streaming.ts  # Streaming support
+│   ├── types/                # TypeScript definitions
+│   └── utils/                # Utilities
+│       ├── service-discovery.ts
+│       └── connection-pool.ts
+├── scripts/                  # Setup and utility scripts
+├── docs/                     # Documentation
+└── PLAN.md                   # Implementation plan
 ```
 
 ## Documentation
 
 - 📚 [Installation Guide](docs/installation.md) - Detailed setup instructions
-- 🤖 [Tools Reference](docs/tools-reference.md) - Complete guide to all MCP tools
-- 🧪 [E2E Test Examples](docs/example-e2e-test.md) - Real-world usage scenarios
-- 🏗️ [Architecture Overview](docs/architecture-diagram.md) - System design and data flow
+- 🤖 [Tools Reference](docs/tools-reference.md) - Complete tool documentation
+- 🏗️ [Architecture Overview](docs/architecture-diagram.md) - System design details
+- 🧪 [Testing Guide](TESTING.md) - Testing procedures
 
-## Known Issues
+## Troubleshooting
 
-- **`.mcp.json` Auto-loading**: Project-scoped MCP configuration via `.mcp.json` may not be automatically detected by Claude Code. Use the individual setup method or restart Claude Code if servers don't appear.
-- **Chrome Port Conflicts**: If port 9222 is already in use, modify the `--remote-debugging-port` in `scripts/chrome.js`
+### Chrome Connection Issues
+- Ensure Chrome is running with `--remote-debugging-port=9222`
+- Check that no other process is using port 9222
+- Try `npm run chrome` to start Chrome correctly
+
+### Service Connection Failures
+- Check the console output for specific error messages
+- Verify all dependencies are installed with `npm install`
+- For manual service startup, see the configuration examples
+
+### Tool Not Found
+- Ensure BabaYaga has successfully connected to all services
+- Check that the tool name includes the service prefix (e.g., `puppeteer_screenshot`)
+- Review available tools in the startup console output
 
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-## Use Cases
-
-- **E2E Testing** - AI-driven test generation and execution
-- **Visual Regression** - Screenshot comparison and UI validation
-- **Debugging** - Console monitoring and element inspection
-- **Web Scraping** - Intelligent data extraction with browser automation
-- **Accessibility** - Automated ARIA and contrast checking
-
-## Troubleshooting
-
-### Chrome won't start
-- Ensure Chrome/Chromium is installed
-- Check if port 9222 is already in use
-- Try `npm run chrome` from the BabaYaga directory
-
-### MCP servers not found
-- For team setup: Ensure `.mcp.json` is in your project root
-- For individual setup: Check `claude mcp list -s user`
-- Make sure you've run `npm install` in the BabaYaga directory
-
-### Tools not working
-- Verify Chrome is running with debugging enabled
-- Check that both MCP servers are registered
-- Look for errors in Claude Code's output panel
 
 ## License
 
@@ -243,5 +268,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ---
 
 <p align="center">
-  Made with ❤️ for teams building with AI
+  Built with ❤️ for the MCP ecosystem
 </p>

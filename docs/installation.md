@@ -1,300 +1,273 @@
 # BabaYaga Installation Guide
 
-This guide covers all installation methods for BabaYaga, from quick setup to advanced configurations.
+This guide covers installation and configuration of BabaYaga, the unified browser automation coordinator for Claude.
 
 ## Prerequisites
 
 - Node.js v18.0.0 or higher
 - npm (comes with Node.js)
 - Chrome or Chromium browser
-- Claude Code
+- Claude Desktop
 
-## Installation Methods
+## Quick Installation
 
-### Method 1: Interactive Setup (Recommended)
-
-The easiest way to get started:
+### Step 1: Clone and Install
 
 ```bash
 git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
-npm run setup
 ```
 
-The setup wizard will guide you through:
-1. Choosing between team or individual setup
-2. Configuring MCP servers
-3. Generating necessary configuration files
+### Step 2: Configure Claude Desktop
 
-### Method 2: Team Setup via Git Submodule
+Add BabaYaga to your Claude desktop configuration file:
 
-Perfect for projects where multiple developers need the same tools:
-
-#### Step 1: Add BabaYaga as a submodule
-
-```bash
-# In your project root
-git submodule add https://github.com/banditburai/babayaga.git
-git commit -m "Add BabaYaga browser automation tools"
-```
-
-#### Step 2: Install dependencies
-
-```bash
-cd babayaga
-npm install
-cd ..
-```
-
-#### Step 3: Create .mcp.json
-
-Create `.mcp.json` in your project root:
-
-> **Note**: As of June 2024, `.mcp.json` project-scoped configuration may not be automatically loaded by Claude Code. You may need to restart Claude Code or use the individual setup method if servers don't appear.
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "puppeteer-babayaga": {
+    "babayaga": {
       "command": "npm",
-      "args": ["run", "start:puppeteer-mcp"],
-      "cwd": "./babayaga",
-      "env": {}
-    },
-    "cdp-babayaga": {
-      "command": "npm",
-      "args": ["run", "start:cdp-mcp"],
-      "cwd": "./babayaga",
-      "env": {}
+      "args": ["run", "start:babayaga"],
+      "cwd": "/absolute/path/to/babayaga"
     }
   }
 }
 ```
 
-#### Step 4: Commit and share
+**Important**: Use the absolute path to your BabaYaga directory.
 
-```bash
-git add .mcp.json
-git commit -m "Configure BabaYaga MCP servers for team"
-git push
-```
+### Step 3: Restart Claude
 
-#### For team members
+Restart Claude Desktop to load the new configuration.
 
-When team members clone your repository:
+## How BabaYaga Works
 
-```bash
-git clone --recurse-submodules <your-repo-url>
-# or if already cloned:
-git submodule update --init --recursive
+BabaYaga is a single MCP server that:
+1. Automatically starts Chrome with debugging enabled (if not running)
+2. Manages Puppeteer and CDP services as child processes
+3. Provides a unified interface for all browser automation tools
+4. Handles response transformations and tool coordination
 
-cd babayaga && npm install && cd ..
-```
+You only need to configure one MCP server (BabaYaga) in Claude!
 
-Claude Code will prompt them to approve the MCP servers on first use.
+## Advanced Configuration
 
-### Method 3: Individual User Setup
+### Custom Service Configuration
 
-Install BabaYaga globally for personal use across all projects:
+Create a `babayaga.config.json` file for custom setups:
 
-#### Step 1: Clone to a tools directory
-
-```bash
-mkdir -p ~/tools
-cd ~/tools
-git clone https://github.com/banditburai/babayaga.git
-cd babayaga
-npm install
-```
-
-#### Step 2: Register with Claude Code
-
-```bash
-# Register Puppeteer MCP server
-claude mcp add puppeteer-babayaga -s user \
-  "npm" "run" "start:puppeteer-mcp" \
-  --cwd "$HOME/tools/babayaga"
-
-# Register CDP MCP server
-claude mcp add cdp-babayaga -s user \
-  "npm" "run" "start:cdp-mcp" \
-  --cwd "$HOME/tools/babayaga"
-```
-
-#### Step 3: Verify installation
-
-```bash
-claude mcp list -s user
-```
-
-You should see both `puppeteer-babayaga` and `cdp-babayaga` listed.
-
-### Method 4: Direct Clone (For Testing)
-
-If you just want to try BabaYaga:
-
-```bash
-# Clone anywhere
-git clone https://github.com/banditburai/babayaga.git
-cd babayaga
-npm install
-
-# Create .mcp.json in the babayaga directory
-cat > .mcp.json << 'EOF'
+```json
 {
-  "mcpServers": {
-    "puppeteer-babayaga": {
+  "services": [
+    {
+      "name": "puppeteer",
       "command": "npm",
       "args": ["run", "start:puppeteer-mcp"],
-      "cwd": "."
+      "healthCheckInterval": 30000
     },
-    "cdp-babayaga": {
-      "command": "npm",
+    {
+      "name": "cdp",
+      "command": "npm", 
       "args": ["run", "start:cdp-mcp"],
-      "cwd": "."
+      "healthCheckInterval": 30000
     }
-  }
+  ]
 }
-EOF
 ```
 
-## Post-Installation
+### Running Services Independently
 
-### Starting Chrome
-
-BabaYaga requires Chrome to be running with remote debugging enabled:
+For debugging or advanced setups, you can run services separately:
 
 ```bash
-# From BabaYaga directory
-npm run chrome
+# Terminal 1: Puppeteer MCP
+npm run start:puppeteer-mcp
 
-# Or manually
-chrome --remote-debugging-port=9222
+# Terminal 2: CDP MCP  
+npm run start:cdp-mcp
+
+# Terminal 3: BabaYaga (with config pointing to services)
+BABAYAGA_CONFIG=./babayaga.config.json npm run start:babayaga
 ```
 
-### Testing Your Installation
+### Connection Pooling
 
-1. **Test MCP servers:**
-   ```bash
-   npm run test:servers
-   ```
+For high-performance scenarios, enable connection pooling:
 
-2. **Run E2E test:**
-   ```bash
-   npm run test:e2e
-   ```
-
-3. **In Claude Code:**
-   ```
-   Using the puppeteer-babayaga tool, navigate to https://example.com
-   ```
+```json
+{
+  "services": [
+    {
+      "name": "cdp",
+      "url": "ws://localhost:3001",
+      "useConnectionPool": true,
+      "poolConfig": {
+        "minConnections": 2,
+        "maxConnections": 10,
+        "idleTimeout": 300000,
+        "acquireTimeout": 5000
+      }
+    }
+  ]
+}
+```
 
 ## Environment Variables
 
-You can customize BabaYaga behavior with environment variables:
+Customize BabaYaga behavior:
 
 ```bash
-# Custom Chrome debugging port
-CHROME_DEBUG_PORT=9223 npm run chrome
+# Disable automatic Chrome startup
+BABAYAGA_AUTO_START_CHROME=false npm run start:babayaga
 
-# Custom Chrome path
-CHROME_PATH="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary" npm run chrome
+# Custom Chrome debugging port
+CHROME_DEBUG_PORT=9223 npm run start:babayaga
+
+# Custom configuration file
+BABAYAGA_CONFIG=./my-config.json npm run start:babayaga
+
+# Chrome executable path
+CHROME_PATH="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary" npm run start:babayaga
 ```
+
+## Verifying Installation
+
+### Test Server Connectivity
+
+```bash
+npm run test:servers
+```
+
+### Run E2E Tests
+
+```bash
+npm run test:e2e
+```
+
+### Test in Claude
+
+Ask Claude:
+```
+Use babayaga to navigate to https://example.com and take a screenshot
+```
+
+## Troubleshooting
+
+### Chrome Connection Issues
+
+If BabaYaga can't connect to Chrome:
+
+1. **Check Chrome is running:**
+   ```bash
+   ps aux | grep chrome
+   ```
+
+2. **Verify the debugging port:**
+   ```bash
+   curl http://localhost:9222/json/version
+   ```
+
+3. **Check for port conflicts:**
+   ```bash
+   lsof -i :9222
+   ```
+
+4. **Use a different port:**
+   ```bash
+   CHROME_DEBUG_PORT=9223 npm run chrome
+   ```
+
+### Service Startup Issues
+
+If services fail to start:
+
+1. **Check the logs** - BabaYaga provides detailed console output
+2. **Verify dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Check Node version:**
+   ```bash
+   node --version  # Should be >= 18.0.0
+   ```
+
+### Tool Not Found
+
+If Claude can't find BabaYaga tools:
+
+1. **Check MCP configuration** - Ensure the path in `claude_desktop_config.json` is absolute
+2. **Restart Claude** - Configuration changes require a restart
+3. **Check service status** - Look for "Available tools:" in BabaYaga's startup output
 
 ## Updating BabaYaga
 
-### For submodule installations:
 ```bash
 cd babayaga
-git pull origin main
-npm install
-```
-
-### For standalone installations:
-```bash
 git pull origin main
 npm install
 ```
 
 ## Uninstalling
 
-### Remove from project:
+1. Remove from Claude configuration:
+   - Edit `claude_desktop_config.json`
+   - Remove the "babayaga" entry from "mcpServers"
+
+2. Delete the directory:
+   ```bash
+   rm -rf /path/to/babayaga
+   ```
+
+## Project Setups
+
+### For Teams
+
+Add BabaYaga as a git submodule:
+
 ```bash
-# Remove submodule
-git submodule deinit -f babayaga
-rm -rf .git/modules/babayaga
-git rm -f babayaga
+# In your project root
+git submodule add https://github.com/banditburai/babayaga.git
+cd babayaga && npm install && cd ..
 
-# Remove .mcp.json or edit it to remove BabaYaga servers
-```
-
-### Remove from user configuration:
-```bash
-claude mcp remove puppeteer-babayaga -s user
-claude mcp remove cdp-babayaga -s user
-```
-
-## Troubleshooting
-
-### Permission Errors
-If you get permission errors, ensure you own the directories:
-```bash
-sudo chown -R $(whoami) ~/tools/babayaga
-```
-
-### Port Already in Use
-If port 9222 is in use:
-```bash
-# Find what's using it
-lsof -i :9222
-
-# Use a different port
-CHROME_DEBUG_PORT=9223 npm run chrome
-```
-
-### MCP Server Not Found
-1. Check your current directory
-2. Verify the `cwd` path in `.mcp.json` is correct
-3. Ensure `npm install` completed successfully
-
-## Advanced Configuration
-
-### Custom MCP Names
-You can use different names for the MCP servers:
-
-```json
+# Create project config
+cat > claude-config.json << 'EOF'
 {
   "mcpServers": {
-    "browser-automation": {
+    "babayaga": {
       "command": "npm",
-      "args": ["run", "start:puppeteer-mcp"],
-      "cwd": "./babayaga"
-    },
-    "browser-inspector": {
-      "command": "npm",
-      "args": ["run", "start:cdp-mcp"],
+      "args": ["run", "start:babayaga"],
       "cwd": "./babayaga"
     }
   }
 }
+EOF
 ```
 
-### Multiple Chrome Instances
-Run BabaYaga with different Chrome instances:
+Team members can then:
+```bash
+git clone --recurse-submodules <your-repo>
+# Add babayaga path from claude-config.json to their Claude config
+```
+
+### For CI/CD
+
+BabaYaga can be used in automated environments:
 
 ```bash
-# Terminal 1: Development Chrome
-CHROME_DEBUG_PORT=9222 npm run chrome
+# Start Chrome in headless mode
+chrome --headless --remote-debugging-port=9222
 
-# Terminal 2: Testing Chrome  
-CHROME_DEBUG_PORT=9223 npm run chrome
+# Start BabaYaga programmatically
+cd babayaga && npm run start:babayaga
 ```
-
-Then configure different MCP servers for each port.
 
 ## Next Steps
 
-- Read the [Tool Reference](tools-reference.md) to learn about all available tools
-- Check out [E2E Examples](example-e2e-test.md) for real-world usage
-- Join our community for support and updates
+- Read the [Tools Reference](tools-reference.md) to learn about available tools
+- Check out the [Architecture Overview](architecture-diagram.md) to understand how BabaYaga works
+- See [Testing Guide](../TESTING.md) for testing examples

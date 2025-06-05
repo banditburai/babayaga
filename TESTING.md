@@ -9,106 +9,222 @@
 ## Quick Test Suite
 
 ```bash
-# 1. Test MCP server connectivity
-npm run test:servers
-
-# 2. Start Chrome with debugging
+# 1. Start Chrome with debugging
 npm run chrome
 
-# 3. Run full E2E test (in another terminal)
+# 2. In a new terminal, start BabaYaga
+npm run start:babayaga
+
+# 3. In another terminal, run tests
 npm run test:e2e
 ```
 
 ## What Gets Tested
 
-### 1. MCP Server Health Check (`npm run test:servers`)
-Tests that both MCP servers start correctly and respond to `tools/list` requests:
-- ✅ Puppeteer MCP server provides 8 tools
-- ✅ CDP MCP server provides 5 tools
-- ✅ Proper JSON-RPC communication
-
-### 2. E2E Test Suite (`npm run test:e2e`)
-Automated test that verifies:
-- Chrome connection with debugging port
-- Navigation to test application
-- Button clicks and console message capture
-- Style manipulation via CDP
-- Screenshot capabilities
-- Form input processing
-
-### 3. TypeScript Compilation
+### 1. Type Checking
 ```bash
 npx tsc --noEmit
 ```
 Verifies all TypeScript code compiles without errors.
 
-## Manual Testing Checklist
+### 2. E2E Test Suite (`npm run test:e2e`)
+Comprehensive test that verifies:
+- BabaYaga server starts correctly
+- Chrome connection with debugging port
+- Tool registration and discovery
+- Navigation and screenshots via Puppeteer tools
+- CDP command execution
+- Composite tool functionality
+- Response transformations
+- Error handling
 
-### For Team Setup
-1. Create a new test project
-2. Add BabaYaga as submodule
-3. Run `npm run setup` and choose "Team Setup"
-4. Verify `.mcp.json` is created
-5. Test that team members can use the tools after cloning
+## Manual Testing in Claude
 
-### For Individual Setup
-1. Clone BabaYaga to `~/tools/`
-2. Run `npm run setup` and choose "Individual Setup"
-3. Verify commands are displayed correctly
-4. Run the claude mcp add commands
-5. Verify with `claude mcp list -s user`
+After configuring BabaYaga in Claude Desktop:
 
-## Available Test Commands
+### Basic Tool Testing
+```
+# Test Puppeteer tools
+Use babayaga's puppeteer_navigate tool to go to https://example.com
+Use babayaga's puppeteer_screenshot tool to capture a screenshot named "test"
 
-| Command | Description |
-|---------|-------------|
-| `npm run test:servers` | Tests MCP server connectivity |
-| `npm run test:e2e` | Runs full E2E browser automation test |
-| `npm run chrome` | Starts Chrome with debugging enabled |
-| `npx tsc --noEmit` | Type-checks all TypeScript files |
+# Test CDP tools
+Use babayaga's cdp_command tool with method "Runtime.evaluate" and params {"expression": "document.title"}
+Use babayaga's cdp_command tool with method "Performance.getMetrics"
+```
 
-## Test Application Features
+### Composite Tool Testing
+```
+# Visual regression
+Use babayaga's visual-regression tool to test https://example.com with baseline "homepage"
 
-The test app (`http://localhost:8888`) includes:
-- **Console Logging Buttons**: Test message capture
-- **Style Manipulation**: Test DOM modification
-- **Form Input**: Test user interaction
-- **Live Console Display**: Visual feedback
+# Performance testing
+Use babayaga's web_performance_test tool with url "https://example.com" and metrics ["performance", "console"]
 
-## Troubleshooting Test Failures
+# Tool chains
+Use babayaga's chain_full_page_analysis tool with url "https://example.com"
+```
 
-### test:servers fails
-- Check Node.js version (must be 18+)
-- Ensure `npm install` completed successfully
-- Look for port conflicts
+### Advanced Testing
+```
+# Test response transformations
+Use babayaga's cdp_command tool with method "Page.captureScreenshot" 
+(Should save to cdp-output/ and return file reference)
 
-### test:e2e fails
-- Ensure Chrome is running with `npm run chrome`
-- Check Chrome is accessible on port 9222
-- Verify test app is running on port 8888
+# Test error handling
+Use babayaga's puppeteer_click tool with selector "#nonexistent"
+(Should return graceful error)
+```
 
-### Chrome won't start
-- Check if port 9222 is already in use: `lsof -i :9222`
-- Try different port: `CHROME_DEBUG_PORT=9223 npm run chrome`
-- Ensure Chrome/Chromium is installed
+## Testing Different Configurations
+
+### 1. Default Configuration (Child Processes)
+```bash
+# Just start BabaYaga - it manages everything
+npm run start:babayaga
+```
+
+### 2. Independent Services
+```bash
+# Terminal 1
+npm run start:puppeteer-mcp
+
+# Terminal 2  
+npm run start:cdp-mcp
+
+# Terminal 3 - with custom config
+cat > test-config.json << 'EOF'
+{
+  "services": [
+    {
+      "name": "puppeteer",
+      "url": "ws://localhost:3000"
+    },
+    {
+      "name": "cdp",
+      "url": "ws://localhost:3001"
+    }
+  ]
+}
+EOF
+
+BABAYAGA_CONFIG=./test-config.json npm run start:babayaga
+```
+
+### 3. Connection Pooling Test
+```bash
+# Create pooled config
+cat > pooled-config.json << 'EOF'
+{
+  "services": [
+    {
+      "name": "cdp",
+      "command": "npm",
+      "args": ["run", "start:cdp-mcp"],
+      "useConnectionPool": true,
+      "poolConfig": {
+        "minConnections": 2,
+        "maxConnections": 5
+      }
+    }
+  ]
+}
+EOF
+
+BABAYAGA_CONFIG=./pooled-config.json npm run start:babayaga
+```
+
+## Test Checklist
+
+### Core Functionality
+- [ ] BabaYaga starts without errors
+- [ ] All tools are registered (check startup logs)
+- [ ] Chrome connection works
+- [ ] Basic Puppeteer tools work (navigate, screenshot)
+- [ ] CDP commands execute successfully
+- [ ] Visual regression tool creates baselines
+- [ ] Composite tools complete workflows
+
+### Advanced Features
+- [ ] Response transformations format output correctly
+- [ ] Large responses are saved to files
+- [ ] Tool chains execute in sequence
+- [ ] Connection pooling maintains multiple connections
+- [ ] Health checks reconnect failed services
+- [ ] Error handling provides useful feedback
+
+### Performance
+- [ ] Tools respond within reasonable time
+- [ ] Memory usage stays stable
+- [ ] Connection pool efficiently reuses connections
+- [ ] Large responses don't block other operations
+
+## Debugging Test Failures
+
+### BabaYaga Won't Start
+1. Check Node.js version: `node --version` (must be >= 18)
+2. Verify installation: `npm install`
+3. Check for port conflicts
+4. Review console output for specific errors
+
+### Chrome Connection Issues
+1. Ensure Chrome is running: `npm run chrome`
+2. Verify debug port: `curl http://localhost:9222/json/version`
+3. Check firewall settings
+4. Try different port: `CHROME_DEBUG_PORT=9223 npm run chrome`
+
+### Tool Discovery Problems
+1. Check service connection in startup logs
+2. Verify tool prefixes (e.g., `puppeteer_`, `cdp_`)
+3. Review service health check status
+4. Try running services independently
+
+### Response Transformation Issues
+1. Check transformer registration
+2. Verify response format matches transformer expectations
+3. Review console logs for transformation errors
+4. Test with raw tool calls first
 
 ## Platform-Specific Notes
 
 ### macOS
 - Chrome location: `/Applications/Google Chrome.app`
-- Alternative: Chrome Canary, Chromium
+- May need to allow Chrome in Security & Privacy settings
 
 ### Windows
 - Chrome location: `C:\Program Files\Google\Chrome\Application\chrome.exe`
-- Run terminals as Administrator if needed
+- Run as Administrator if permission issues occur
 
 ### Linux
-- Chrome packages: `google-chrome`, `chromium-browser`
-- May need: `--disable-gpu` flag
+- Chrome packages: `google-chrome-stable`, `chromium`
+- May need: `--no-sandbox` flag in some environments
 
 ## Contributing Tests
 
 When adding new features:
-1. Add test cases to `test:e2e` script
+1. Add corresponding test cases
 2. Update this testing guide
-3. Ensure all tests pass before PR
+3. Ensure all existing tests pass
+4. Add integration tests for new tools
+5. Document any new test commands
+
+## Continuous Integration
+
+For CI/CD environments:
+
+```bash
+# Headless Chrome
+chrome --headless --remote-debugging-port=9222 &
+
+# Wait for Chrome
+sleep 5
+
+# Run BabaYaga
+npm run start:babayaga &
+
+# Wait for services
+sleep 10
+
+# Run tests
+npm run test:e2e
+```
