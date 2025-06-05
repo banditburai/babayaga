@@ -6,6 +6,7 @@ import { ServiceDiscovery } from '../utils/service-discovery';
 import { ToolRegistryImpl } from './tools/registry';
 import { ServiceConfig, ToolResponse, VisualRegressionParams } from '../types/mcp';
 import { VisualRegressionTool } from './tools/builtin/visual-regression';
+import { SaveScreenshotTool } from './tools/builtin/save-screenshot';
 import { createDefaultTransformers, TransformerChain } from './tools/transformers';
 import { CompositeToolManager } from './tools/composite';
 import { StreamingResponseHandler } from './tools/streaming';
@@ -23,6 +24,7 @@ export class BabaYagaMCPServer {
   private serviceDiscovery: ServiceDiscovery;
   private toolRegistry: ToolRegistryImpl;
   private visualRegressionTool: VisualRegressionTool;
+  private saveScreenshotTool: SaveScreenshotTool;
   private transformers: TransformerChain;
   private compositeToolManager: CompositeToolManager;
   private streamingHandler: StreamingResponseHandler;
@@ -44,6 +46,7 @@ export class BabaYagaMCPServer {
     this.serviceDiscovery = new ServiceDiscovery(serviceConfig);
     this.toolRegistry = new ToolRegistryImpl();
     this.visualRegressionTool = new VisualRegressionTool();
+    this.saveScreenshotTool = new SaveScreenshotTool();
     this.transformers = createDefaultTransformers();
     this.compositeToolManager = new CompositeToolManager(this.serviceDiscovery);
     this.streamingHandler = new StreamingResponseHandler();
@@ -110,6 +113,17 @@ export class BabaYagaMCPServer {
             throw new Error('Missing required parameters for visual-regression');
           }
           return await this.handleVisualRegression({ url, baselineName });
+          
+        case 'save_screenshot':
+          const { base64Data, filename } = args as Record<string, any>;
+          if (!base64Data) {
+            throw new Error('Missing required parameter: base64Data');
+          }
+          return await this.saveScreenshotTool.saveScreenshot(base64Data, filename);
+          
+        case 'list_screenshots':
+          return await this.saveScreenshotTool.listScreenshots();
+          
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -266,6 +280,34 @@ export class BabaYagaMCPServer {
             },
           },
           required: ['url', 'baselineName'],
+        },
+      });
+      
+      this.toolRegistry.register({
+        name: 'save_screenshot',
+        description: 'Save a screenshot from base64 data to local file',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            base64Data: {
+              type: 'string',
+              description: 'Base64 encoded image data (with or without data URL prefix)',
+            },
+            filename: {
+              type: 'string',
+              description: 'Optional filename for the screenshot (defaults to timestamp)',
+            },
+          },
+          required: ['base64Data'],
+        },
+      });
+      
+      this.toolRegistry.register({
+        name: 'list_screenshots',
+        description: 'List all saved screenshots in the screenshots directory',
+        inputSchema: {
+          type: 'object',
+          properties: {},
         },
       });
       
