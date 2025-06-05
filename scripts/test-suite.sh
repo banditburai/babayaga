@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # BabaYaga Comprehensive Test Suite
-# This script runs through automated tests for the new architecture
+# Combines all tests with proper error handling and clear output
 
-set -e
+set -e  # Exit on error, but we'll handle the increment issue
 
 # Colors for output
 RED='\033[0;31m'
@@ -22,12 +22,12 @@ log_test() {
 
 log_pass() {
     echo -e "${GREEN}✅ $1${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 }
 
 log_fail() {
     echo -e "${RED}❌ $1${NC}"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 }
 
 check_command() {
@@ -64,14 +64,14 @@ wait_for_port() {
 }
 
 # Start test suite
-echo "🧪 BabaYaga Automated Test Suite"
-echo "================================="
+echo "🧪 BabaYaga Comprehensive Test Suite"
+echo "===================================="
 echo "Date: $(date)"
 echo "Node Version: $(node --version)"
 echo "OS: $OSTYPE"
-echo "================================="
+echo "===================================="
 
-# Test 1: Environment Check
+# Test 1: Environment Setup
 log_test "Environment Setup"
 if check_command node; then
     log_pass "Node.js installed"
@@ -87,7 +87,27 @@ else
     exit 1
 fi
 
-# Test 2: TypeScript Compilation
+# Test 2: Project Structure
+log_test "Project Structure"
+if [ -d "src/babayaga-server" ]; then
+    log_pass "Source directory exists"
+else
+    log_fail "Source directory missing"
+fi
+
+if [ -f "src/babayaga-server/index.ts" ]; then
+    log_pass "Main server file exists"
+else
+    log_fail "Main server file missing"
+fi
+
+if [ -f "package.json" ]; then
+    log_pass "package.json exists"
+else
+    log_fail "package.json missing"
+fi
+
+# Test 3: TypeScript Compilation
 log_test "TypeScript Compilation"
 if npx tsc --noEmit; then
     log_pass "TypeScript compiles without errors"
@@ -95,7 +115,7 @@ else
     log_fail "TypeScript compilation failed"
 fi
 
-# Test 3: Chrome Auto-Start
+# Test 4: Chrome Auto-Start
 log_test "Chrome Auto-Start Functionality"
 kill_chrome
 sleep 2
@@ -118,7 +138,7 @@ else
     log_fail "Chrome did not start automatically"
 fi
 
-# Test 4: Service Discovery
+# Test 5: Service Discovery
 log_test "Service Discovery"
 if grep -q "Connected to service: puppeteer" babayaga.log; then
     log_pass "Puppeteer service connected"
@@ -132,7 +152,7 @@ else
     log_fail "CDP service not connected"
 fi
 
-# Test 5: Tool Registration
+# Test 6: Tool Registration
 log_test "Tool Registration"
 if grep -q "Available tools:" babayaga.log; then
     log_pass "Tools registered successfully"
@@ -149,11 +169,23 @@ if grep -q "Available tools:" babayaga.log; then
     else
         log_fail "CDP command tool missing"
     fi
+    
+    if grep -q "visual-regression" babayaga.log; then
+        log_pass "Built-in tools registered"
+    else
+        log_fail "Built-in tools missing"
+    fi
+    
+    if grep -q "chain_full_page_analysis" babayaga.log; then
+        log_pass "Chain tools registered"
+    else
+        log_fail "Chain tools missing"
+    fi
 else
     log_fail "Tool registration failed"
 fi
 
-# Test 6: Directory Creation
+# Test 7: Directory Creation
 log_test "Directory Setup"
 if [ -d "./cdp-output" ]; then
     log_pass "cdp-output directory created"
@@ -165,7 +197,7 @@ fi
 kill $BABAYAGA_PID 2>/dev/null || true
 kill_chrome
 
-# Test 7: Chrome Already Running
+# Test 8: Chrome Already Running
 log_test "Chrome Already Running Detection"
 npm run chrome > chrome.log 2>&1 &
 CHROME_PID=$!
@@ -186,7 +218,7 @@ kill $BABAYAGA_PID 2>/dev/null || true
 kill $CHROME_PID 2>/dev/null || true
 kill_chrome
 
-# Test 8: Disable Auto-Start
+# Test 9: Disable Auto-Start
 log_test "Disable Chrome Auto-Start"
 BABAYAGA_AUTO_START_CHROME=false npm run start:babayaga > babayaga3.log 2>&1 &
 BABAYAGA_PID=$!
@@ -202,13 +234,13 @@ fi
 kill $BABAYAGA_PID 2>/dev/null || true
 
 # Test Summary
-echo -e "\n================================="
+echo -e "\n===================================="
 echo "Test Summary"
-echo "================================="
+echo "===================================="
 echo -e "${GREEN}Passed: $PASSED${NC}"
 echo -e "${RED}Failed: $FAILED${NC}"
 echo -e "Total: $((PASSED + FAILED))"
-echo "================================="
+echo "===================================="
 
 # Cleanup log files
 rm -f babayaga.log babayaga2.log babayaga3.log chrome.log

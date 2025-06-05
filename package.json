@@ -11,7 +11,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./scripts/test-suite.sh",
     "start:puppeteer-mcp": "tsx src/start-puppeteer-mcp.ts",
     "start:cdp-mcp": "tsx src/start-devtools-mcp.ts",
     "serve:test-app": "npx http-server test-app -p 8888",
