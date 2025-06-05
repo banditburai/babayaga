@@ -99,7 +99,24 @@ async function startChrome() {
         const version = await response.json();
         console.log('✅ Chrome started successfully with remote debugging on port 9222');
         console.log(`📍 Browser: ${version.Browser}`);
-        console.log('📍 Chrome will open the test app at http://localhost:8888');
+        
+        // Check if Chrome has any tabs open
+        const tabsResponse = await fetch('http://localhost:9222/json/list');
+        const tabs = await tabsResponse.json();
+        
+        if (tabs.length === 0) {
+          console.log('🔧 No tabs found, creating initial tab...');
+          // Create a new tab with the test app URL
+          const newTabResponse = await fetch('http://localhost:9222/json/new?http://localhost:8888', {
+            method: 'PUT'
+          });
+          if (newTabResponse.ok) {
+            console.log('✅ Created tab with http://localhost:8888');
+          }
+        } else {
+          console.log('📍 Chrome opened with existing tab(s)');
+        }
+        
         return;
       }
     } catch (e) {
