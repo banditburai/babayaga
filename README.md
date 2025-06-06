@@ -52,7 +52,7 @@ Add BabaYaga to your Claude desktop configuration:
   "mcpServers": {
     "babayaga": {
       "command": "node",
-      "args": ["/path/to/babayaga/dist/index.js"],
+      "args": ["/path/to/babayaga/build/index.js"],
       "env": {
         "START_URL": "https://example.com"
       }

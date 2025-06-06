@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "cd node_modules/babayaga && npm install",
     "start": "cd node_modules/babayaga && npm start",
-    "start:built": "node node_modules/babayaga/dist/index.js",
+    "start:built": "node node_modules/babayaga/build/index.js",
     "update": "npm uninstall babayaga && npm install github:banditburai/babayaga"
   },
   "dependencies": {

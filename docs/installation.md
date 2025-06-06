@@ -33,7 +33,7 @@ Add BabaYaga to your Claude desktop configuration file:
   "mcpServers": {
     "babayaga": {
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": ["build/index.js"],
       "cwd": "/absolute/path/to/babayaga"
     }
   }
@@ -49,7 +49,7 @@ You can customize BabaYaga's behavior using environment variables in the Claude 
   "mcpServers": {
     "babayaga": {
       "command": "node",
-      "args": ["dist/index.js"],
+      "args": ["build/index.js"],
       "cwd": "/absolute/path/to/babayaga",
       "env": {
         "HEADLESS": "true",
@@ -83,7 +83,7 @@ Then in your Claude config:
   "mcpServers": {
     "babayaga": {
       "command": "node",
-      "args": ["node_modules/babayaga/dist/index.js"],
+      "args": ["node_modules/babayaga/build/index.js"],
       "cwd": "/path/to/your/project"
     }
   }
