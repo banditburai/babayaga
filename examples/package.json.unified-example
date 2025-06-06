@@ -1,0 +1,12 @@
+{
+  "name": "babayaga-test-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "cd babayaga-unified && npm start",
+    "update": "./update-unified.sh"
+  },
+  "dependencies": {
+    "babayaga": "github:banditburai/babayaga#unified-babayaga"
+  }
+}

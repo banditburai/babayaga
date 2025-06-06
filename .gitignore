@@ -52,4 +52,4 @@ chrome-user-data/
 # MCP server specific
 .mcp-cache/
 mcp-logs/
-.mcp.json
+.mcp.jsonworktrees/
