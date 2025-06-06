@@ -1,87 +1,197 @@
 # Screenshot Workflow with BabaYaga
 
-BabaYaga now includes tools for saving screenshots locally after capturing them with Puppeteer.
+BabaYaga includes a smart screenshot tool that automatically handles MCP token limits by deciding whether to return base64 data or save to disk based on image size.
 
-## Available Screenshot Tools
+## The Smart Screenshot Tool
 
-### 1. `puppeteer_screenshot`
-Takes a screenshot of the current page and returns it as base64 data.
+### Overview
 
-**Arguments:**
-- `name` (string): Name/identifier for the screenshot
+The `screenshot` tool intelligently handles the MCP 25,000 token limit issue:
+- **Small screenshots** (< 20KB): Returns base64 data directly
+- **Large screenshots** (≥ 20KB): Automatically saves to disk and returns filepath
 
-**Returns:**
-- Base64 encoded image data
+This means you don't need to worry about token limits - the tool handles it for you!
 
-### 2. `save_screenshot` 
-Saves base64 image data to a local file in the `./screenshots` directory.
+### Tool Parameters
 
-**Arguments:**
-- `base64Data` (string, required): Base64 encoded image data (with or without data URL prefix)
-- `filename` (string, optional): Filename for the screenshot. If not provided, generates timestamp-based name.
+- `fullPage` (boolean, optional): Capture entire page instead of just viewport
+- `selector` (string, optional): CSS selector to capture specific element
+- `output` (string, optional): Force output mode - `"auto"` (default), `"file"`, or `"base64"`
+- `filename` (string, optional): Custom filename when saving to disk
 
-**Returns:**
-- Success status, filepath, file size, and timestamp
+## Example Workflows
 
-### 3. `list_screenshots`
-Lists all saved screenshots in the screenshots directory.
+### Basic Screenshot (Auto Mode)
 
-**Arguments:** None
+```javascript
+// Simple screenshot - tool decides what to do
+await screenshot({});
 
-**Returns:**
-- Count of screenshots and details for each (filename, path, size, timestamps)
-
-## Example Workflow
-
-Here's how an AI agent would capture and save a screenshot:
-
-```json
-// Step 1: Navigate to a page
+// For a small viewport screenshot, you'll get:
 {
-  "tool": "puppeteer_navigate",
-  "arguments": {
-    "url": "http://localhost:8888"
-  }
-}
-
-// Step 2: Capture screenshot (returns base64 data)
-{
-  "tool": "puppeteer_screenshot", 
-  "arguments": {
-    "name": "test-page"
-  }
-}
-
-// Step 3: Save the screenshot locally
-{
-  "tool": "save_screenshot",
-  "arguments": {
-    "base64Data": "<base64 data from step 2>",
-    "filename": "test-page-screenshot.png"
-  }
-}
-
-// Step 4: List all saved screenshots
-{
-  "tool": "list_screenshots",
-  "arguments": {}
+  "success": true,
+  "saved": false,
+  "data": "iVBORw0KGgoAAAANS...",
+  "format": "base64",
+  "size": 15360,
+  "sizeHuman": "15.0KB"
 }
 ```
 
-## Key Points
+### Full Page Screenshot
 
-1. **Puppeteer returns data, doesn't save**: The `puppeteer_screenshot` tool captures images but only returns the base64 data. It doesn't save files locally.
+```javascript
+// Full page screenshots are usually large
+await screenshot({ fullPage: true });
 
-2. **Explicit saving step**: Use `save_screenshot` to persist the image data to disk.
+// Tool automatically saves to disk:
+{
+  "success": true,
+  "saved": true,
+  "filepath": "screenshots/screenshot-1704825600000.png",
+  "filename": "screenshot-1704825600000.png",
+  "size": 2097152,
+  "sizeHuman": "2048.0KB"
+}
+```
 
-3. **Automatic directory creation**: The screenshots directory is created automatically if it doesn't exist.
+### Element Screenshot
 
-4. **Flexible filenames**: You can specify custom filenames or let the system generate timestamp-based names.
+```javascript
+// Capture specific element
+await screenshot({ 
+  selector: "#header",
+  filename: "site-header"
+});
 
-5. **Data URL support**: The `save_screenshot` tool handles base64 data with or without the `data:image/png;base64,` prefix.
+// Small element returns base64:
+{
+  "success": true,
+  "saved": false,
+  "data": "iVBORw0KGgoAAAANS...",
+  "format": "base64",
+  "size": 8192,
+  "sizeHuman": "8.0KB"
+}
+```
 
-## Implementation Details
+### Force File Output
 
-The screenshot tools are built into the BabaYaga server as native tools, alongside visual-regression testing. They're available immediately when the server starts and don't require any additional services.
+```javascript
+// Always save to disk, even for small images
+await screenshot({ 
+  selector: "#logo",
+  output: "file",
+  filename: "company-logo"
+});
 
-The saved screenshots are stored in `./screenshots/` relative to where BabaYaga is running.
+// Always saves to disk:
+{
+  "success": true,
+  "saved": true,
+  "filepath": "screenshots/company-logo.png",
+  "filename": "company-logo.png",
+  "size": 4096,
+  "sizeHuman": "4.0KB"
+}
+```
+
+## Claude Desktop Usage
+
+When using with Claude Desktop, just ask naturally:
+
+> "Take a screenshot of the current page"
+
+> "Capture the full page"
+
+> "Screenshot just the navigation menu"
+
+> "Take a screenshot and save it as homepage"
+
+Claude will use the appropriate parameters, and BabaYaga handles the rest!
+
+## Understanding the Response
+
+### When `saved: false`
+- Screenshot was small enough to return as base64
+- Data is in the `data` field
+- Use this data directly for analysis or display
+
+### When `saved: true`
+- Screenshot was too large for MCP tokens
+- File saved to disk at `filepath`
+- Use the filepath to reference the image
+
+## Configuration
+
+### Screenshot Directory
+By default, screenshots are saved to `./screenshots/` relative to BabaYaga's directory.
+
+Configure with environment variable:
+```bash
+SCREENSHOT_PATH=/custom/path/to/screenshots
+```
+
+### Size Threshold
+The 20KB threshold is conservative to ensure we stay well under MCP's limit. This accounts for:
+- Base64 encoding overhead (33% increase)
+- JSON response wrapper
+- Safety margin
+
+## Best Practices
+
+1. **Use Auto Mode**: Let the tool decide - it knows the limits
+2. **Meaningful Filenames**: When you need to find screenshots later
+3. **Check Response Type**: Look at `saved` field to know how to handle the result
+4. **Full Page Sparingly**: Full page screenshots are almost always saved to disk
+
+## Common Scenarios
+
+### Visual Testing
+```javascript
+// Baseline screenshot
+await screenshot({ 
+  selector: ".product-card",
+  filename: "product-card-baseline"
+});
+
+// After changes
+await screenshot({ 
+  selector: ".product-card",
+  filename: "product-card-updated"
+});
+```
+
+### Documentation
+```javascript
+// Force file output for documentation
+await screenshot({ 
+  fullPage: true,
+  output: "file",
+  filename: "full-page-documentation"
+});
+```
+
+### Quick Checks
+```javascript
+// Let auto mode handle it
+await screenshot({});
+// Small = inline data, Large = saved file
+```
+
+## Troubleshooting
+
+### "Token limit exceeded" errors
+- Should not happen with default settings
+- Check if you're forcing `output: "base64"` on large images
+- Let auto mode handle it instead
+
+### Can't find saved screenshots
+- Check `SCREENSHOT_PATH` environment variable
+- Default location is `./screenshots/`
+- Look for the filepath in the response
+
+### Need the base64 data for a large screenshot
+- Not recommended due to token limits
+- If absolutely needed: `output: "base64"`
+- Consider processing the saved file instead

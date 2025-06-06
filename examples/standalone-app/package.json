@@ -1,0 +1,15 @@
+{
+  "name": "babayaga-standalone-example",
+  "version": "1.0.0",
+  "description": "Example standalone app using BabaYaga",
+  "type": "module",
+  "scripts": {
+    "postinstall": "cd node_modules/babayaga && npm install",
+    "start": "cd node_modules/babayaga && npm start",
+    "start:built": "node node_modules/babayaga/dist/index.js",
+    "update": "npm uninstall babayaga && npm install github:banditburai/babayaga"
+  },
+  "dependencies": {
+    "babayaga": "github:banditburai/babayaga"
+  }
+}

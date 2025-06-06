@@ -1,127 +1,83 @@
 # BabaYaga Architecture Overview
 
-## System Architecture
+## Unified Architecture
 
 ```mermaid
 graph TB
-    subgraph "Claude Code Environment"
+    subgraph "Claude Desktop / MCP Client"
         A[Claude Agent]
         B[MCP Client]
     end
     
-    subgraph "BabaYaga MCP Servers"
-        C[Puppeteer MCP Server<br/>Port: stdio]
-        D[CDP MCP Server<br/>Port: stdio]
+    subgraph "BabaYaga Unified Server"
+        C[MCP Server<br/>stdio transport]
+        D[Tool Registry]
+        E[Browser Controller<br/>Puppeteer]
+        
+        subgraph "Tool Modules"
+            F[Browser Tools]
+            G[Visual Tools]
+            H[Performance Tools]
+        end
     end
     
-    subgraph "Browser Environment"
-        E[Chrome/Chromium<br/>--remote-debugging-port=9222]
-        F[Test Web Application<br/>http://localhost:8888]
+    subgraph "Browser"
+        I[Chrome/Chromium<br/>Controlled by Puppeteer]
+        J[Web Page]
     end
     
     A --> B
-    B --> C
-    B --> D
+    B -.stdio.-> C
+    C --> D
+    D --> F
+    D --> G
+    D --> H
     C --> E
-    D --> E
-    E --> F
+    E --> I
+    I --> J
     
     style A fill:#f9f9f9,stroke:#333,stroke-width:2px,color:#000
     style B fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
-    style C fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    style D fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-    style E fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
-    style F fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    style C fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#000
+    style D fill:#fff3e0,stroke:#ff9800,stroke-width:2px,color:#000
+    style E fill:#fce4ec,stroke:#e91e63,stroke-width:2px,color:#000
 ```
+
+## Key Components
+
+### 1. MCP Client (Claude Desktop)
+- Connects to BabaYaga via stdio
+- Sends tool requests
+- Receives responses
+
+### 2. BabaYaga Unified Server
+- **Single Process**: Everything runs in one Node.js process
+- **MCP Server**: Handles protocol communication
+- **Tool Registry**: Manages available tools
+- **Browser Controller**: Direct Puppeteer integration
+
+### 3. Tool Modules
+- **Browser Tools**: Navigation, clicking, typing, etc.
+- **Visual Tools**: Screenshots with smart MCP token handling
+- **Performance Tools**: Metrics and monitoring (planned)
+
+### 4. Browser
+- Controlled directly by Puppeteer
+- No separate Chrome DevTools Protocol proxy
+- Efficient, direct communication
 
 ## Data Flow
 
-### 1. Agent Request Flow
-```
-Claude Agent → Claude Code → MCP Server → Chrome → Web App
-```
+1. Claude sends a tool request via MCP
+2. MCP Server receives and validates the request
+3. Tool Registry finds the appropriate tool
+4. Tool executes using Puppeteer
+5. Response is formatted and sent back to Claude
 
-### 2. Tool Execution Flow
+## Benefits of Unified Architecture
 
-#### Puppeteer Tools:
-- `navigate` → Browser Navigation
-- `click` → Element Interaction
-- `screenshot` → Visual Capture
-- `evaluate` → JS Execution
-
-#### CDP Tools:
-- `cdp_connect` → DevTools Connection
-- `cdp_evaluate` → Direct JS Execution
-- `cdp_get_console_messages` → Console Monitoring
-- `cdp_get_computed_style` → Style Inspection
-
-## Component Responsibilities
-
-### Puppeteer MCP Server
-- **Purpose**: High-level browser automation
-- **Strengths**: User interactions, navigation, screenshots
-- **Protocol**: stdio (standard input/output)
-- **Implementation**: Wraps puppeteer-mcp-server npm package
-
-### CDP MCP Server
-- **Purpose**: Low-level browser inspection
-- **Strengths**: Console access, DOM manipulation, debugging
-- **Protocol**: stdio with Chrome DevTools Protocol
-- **Implementation**: Custom implementation using chrome-remote-interface
-
-### Test Application
-- **Purpose**: Controlled testing environment
-- **Features**: 
-  - Interactive buttons with console logging
-  - Style manipulation controls
-  - Form input processing
-  - Real-time console output display
-
-## Communication Protocols
-
-### MCP Communication
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "tool_name",
-    "arguments": {
-      "param1": "value1"
-    }
-  }
-}
-```
-
-### CDP Communication
-```javascript
-// Example CDP command
-{
-  method: "Runtime.evaluate",
-  params: {
-    expression: "document.title",
-    returnByValue: true
-  }
-}
-```
-
-## Security Considerations
-
-1. **Chrome Debugging Port**: Exposed on localhost only
-2. **User Data Isolation**: Separate Chrome profile recommended
-3. **MCP Server Access**: Limited to Claude Code environment
-4. **No Remote Access**: All servers bind to localhost
-
-## Performance Considerations
-
-1. **Connection Pooling**: Single CDP connection per session
-2. **Message Size**: CDP responses can be large (DOM trees)
-3. **Resource Usage**: Chrome instances consume memory
-4. **Concurrent Operations**: Both servers can run simultaneously
-
-## Error Handling
-
-1. **Connection Failures**: Graceful fallback with clear error messages
-2. **Tool Timeouts**: Configurable timeouts for long operations
-3. **Chrome Crashes**: Server detects and reports disconnections
-4. **Invalid Selectors**: Validation before execution
+- **Simplicity**: No IPC or subprocess management
+- **Performance**: Direct control without proxy layers
+- **Reliability**: Single process means fewer failure points
+- **Debugging**: Standard Node.js debugging tools work
+- **Type Safety**: Full TypeScript throughout

@@ -1,5 +1,5 @@
 {
-  "name": "babayaga-unified",
+  "name": "babayaga",
   "version": "2.0.0",
   "description": "Unified browser automation framework with MCP integration",
   "main": "dist/index.js",

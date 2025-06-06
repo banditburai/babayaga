@@ -1,12 +1,12 @@
 # BabaYaga Installation Guide
 
-This guide covers installation and configuration of BabaYaga, the unified browser automation coordinator for Claude.
+This guide covers installation and configuration of BabaYaga, the unified browser automation framework for Claude Desktop.
 
 ## Prerequisites
 
 - Node.js v18.0.0 or higher
 - npm (comes with Node.js)
-- Chrome or Chromium browser
+- Chrome or Chromium browser (automatically installed by Puppeteer)
 - Claude Desktop
 
 ## Quick Installation
@@ -17,257 +17,122 @@ This guide covers installation and configuration of BabaYaga, the unified browse
 git clone https://github.com/banditburai/babayaga.git
 cd babayaga
 npm install
+npm run build
 ```
 
 ### Step 2: Configure Claude Desktop
 
 Add BabaYaga to your Claude desktop configuration file:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
 **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "babayaga": {
-      "command": "npm",
-      "args": ["run", "start:babayaga"],
+      "command": "node",
+      "args": ["dist/index.js"],
       "cwd": "/absolute/path/to/babayaga"
     }
   }
 }
 ```
 
-**Important**: Use the absolute path to your BabaYaga directory.
+## Configuration Options
 
-### Step 3: Restart Claude
-
-Restart Claude Desktop to load the new configuration.
-
-## How BabaYaga Works
-
-BabaYaga is a single MCP server that:
-1. Automatically starts Chrome with debugging enabled (if not running)
-2. Manages Puppeteer and CDP services as child processes
-3. Provides a unified interface for all browser automation tools
-4. Handles response transformations and tool coordination
-
-You only need to configure one MCP server (BabaYaga) in Claude!
-
-## Advanced Configuration
-
-### Custom Service Configuration
-
-Create a `babayaga.config.json` file for custom setups:
+You can customize BabaYaga's behavior using environment variables in the Claude config:
 
 ```json
 {
-  "services": [
-    {
-      "name": "puppeteer",
-      "command": "npm",
-      "args": ["run", "start:puppeteer-mcp"],
-      "healthCheckInterval": 30000
-    },
-    {
-      "name": "cdp",
-      "command": "npm", 
-      "args": ["run", "start:cdp-mcp"],
-      "healthCheckInterval": 30000
-    }
-  ]
-}
-```
-
-### Running Services Independently
-
-For debugging or advanced setups, you can run services separately:
-
-```bash
-# Terminal 1: Puppeteer MCP
-npm run start:puppeteer-mcp
-
-# Terminal 2: CDP MCP  
-npm run start:cdp-mcp
-
-# Terminal 3: BabaYaga (with config pointing to services)
-BABAYAGA_CONFIG=./babayaga.config.json npm run start:babayaga
-```
-
-### Connection Pooling
-
-For high-performance scenarios, enable connection pooling:
-
-```json
-{
-  "services": [
-    {
-      "name": "cdp",
-      "url": "ws://localhost:3001",
-      "useConnectionPool": true,
-      "poolConfig": {
-        "minConnections": 2,
-        "maxConnections": 10,
-        "idleTimeout": 300000,
-        "acquireTimeout": 5000
+  "mcpServers": {
+    "babayaga": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/absolute/path/to/babayaga",
+      "env": {
+        "HEADLESS": "true",
+        "START_URL": "https://example.com",
+        "SCREENSHOT_PATH": "/path/to/screenshots"
       }
     }
-  ]
+  }
 }
 ```
 
-## Environment Variables
+### Available Environment Variables
 
-Customize BabaYaga behavior:
+- `HEADLESS` - Run browser in headless mode (`true`/`false`, default: `false`)
+- `START_URL` - Initial URL to navigate to (default: `https://wikipedia.org`)
+- `SCREENSHOT_PATH` - Directory for saving screenshots (default: `./screenshots`)
+- `BROWSER_ARGS` - Additional Chrome arguments, comma-separated
+
+## Using as NPM Dependency
+
+If you want to use BabaYaga in your own project:
 
 ```bash
-# Disable automatic Chrome startup
-BABAYAGA_AUTO_START_CHROME=false npm run start:babayaga
+npm install github:banditburai/babayaga
+```
 
-# Custom Chrome debugging port
-CHROME_DEBUG_PORT=9223 npm run start:babayaga
+Then in your Claude config:
 
-# Custom configuration file
-BABAYAGA_CONFIG=./my-config.json npm run start:babayaga
+```json
+{
+  "mcpServers": {
+    "babayaga": {
+      "command": "node",
+      "args": ["node_modules/babayaga/dist/index.js"],
+      "cwd": "/path/to/your/project"
+    }
+  }
+}
+```
 
-# Chrome executable path
-CHROME_PATH="/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary" npm run start:babayaga
+## Development Mode
+
+For development, you can run without building:
+
+```json
+{
+  "mcpServers": {
+    "babayaga": {
+      "command": "npx",
+      "args": ["tsx", "src/index.ts"],
+      "cwd": "/absolute/path/to/babayaga"
+    }
+  }
+}
 ```
 
 ## Verifying Installation
 
-### Test Server Connectivity
-
-```bash
-npm run test:servers
-```
-
-### Run E2E Tests
-
-```bash
-npm run test:e2e
-```
-
-### Test in Claude
-
-Ask Claude:
-```
-Use babayaga to navigate to https://example.com and take a screenshot
-```
+1. Restart Claude Desktop after updating the configuration
+2. In Claude, you should see BabaYaga's tools available
+3. Try a simple command like "Take a screenshot of the current page"
 
 ## Troubleshooting
 
-### Chrome Connection Issues
+### BabaYaga not showing up in Claude
 
-If BabaYaga can't connect to Chrome:
+1. Check the config file syntax (must be valid JSON)
+2. Ensure the path to BabaYaga is absolute, not relative
+3. Check Claude's logs for error messages
 
-1. **Check Chrome is running:**
-   ```bash
-   ps aux | grep chrome
-   ```
+### Browser doesn't launch
 
-2. **Verify the debugging port:**
-   ```bash
-   curl http://localhost:9222/json/version
-   ```
+1. Make sure Chrome/Chromium is accessible
+2. Try setting `HEADLESS=true` to run without UI
+3. Check if port 9222 is already in use
 
-3. **Check for port conflicts:**
-   ```bash
-   lsof -i :9222
-   ```
+### Permission errors
 
-4. **Use a different port:**
-   ```bash
-   CHROME_DEBUG_PORT=9223 npm run chrome
-   ```
-
-### Service Startup Issues
-
-If services fail to start:
-
-1. **Check the logs** - BabaYaga provides detailed console output
-2. **Verify dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Check Node version:**
-   ```bash
-   node --version  # Should be >= 18.0.0
-   ```
-
-### Tool Not Found
-
-If Claude can't find BabaYaga tools:
-
-1. **Check MCP configuration** - Ensure the path in `claude_desktop_config.json` is absolute
-2. **Restart Claude** - Configuration changes require a restart
-3. **Check service status** - Look for "Available tools:" in BabaYaga's startup output
-
-## Updating BabaYaga
-
-```bash
-cd babayaga
-git pull origin main
-npm install
-```
-
-## Uninstalling
-
-1. Remove from Claude configuration:
-   - Edit `claude_desktop_config.json`
-   - Remove the "babayaga" entry from "mcpServers"
-
-2. Delete the directory:
-   ```bash
-   rm -rf /path/to/babayaga
-   ```
-
-## Project Setups
-
-### For Teams
-
-Add BabaYaga as a git submodule:
-
-```bash
-# In your project root
-git submodule add https://github.com/banditburai/babayaga.git
-cd babayaga && npm install && cd ..
-
-# Create project config
-cat > claude-config.json << 'EOF'
-{
-  "mcpServers": {
-    "babayaga": {
-      "command": "npm",
-      "args": ["run", "start:babayaga"],
-      "cwd": "./babayaga"
-    }
-  }
-}
-EOF
-```
-
-Team members can then:
-```bash
-git clone --recurse-submodules <your-repo>
-# Add babayaga path from claude-config.json to their Claude config
-```
-
-### For CI/CD
-
-BabaYaga can be used in automated environments:
-
-```bash
-# Start Chrome in headless mode
-chrome --headless --remote-debugging-port=9222
-
-# Start BabaYaga programmatically
-cd babayaga && npm run start:babayaga
-```
+1. Ensure BabaYaga has permission to write to the screenshots directory
+2. On macOS, you may need to grant screen recording permissions
 
 ## Next Steps
 
-- Read the [Tools Reference](tools-reference.md) to learn about available tools
-- Check out the [Architecture Overview](architecture-diagram.md) to understand how BabaYaga works
-- See [Testing Guide](../TESTING.md) for testing examples
+- See [tools-reference.md](tools-reference.md) for available tools
+- Check [architecture-diagram.md](architecture-diagram.md) to understand how it works
+- Read [screenshot-workflow.md](screenshot-workflow.md) for screenshot examples

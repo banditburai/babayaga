@@ -1,181 +1,201 @@
 # BabaYaga Tools Reference
 
-This guide covers all available tools in both Puppeteer MCP and CDP MCP servers.
+This guide covers all available tools in the unified BabaYaga server.
 
-## Puppeteer MCP Tools
+## Browser Control Tools
 
-Puppeteer provides high-level browser automation capabilities.
+Core browser automation capabilities for navigation and interaction.
 
 ### Available Tools
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `puppeteer_connect_active_tab` | Connect to existing Chrome instance | `targetUrl` (optional), `debugPort` (default: 9222) |
-| `puppeteer_navigate` | Navigate to a URL | `url` (required) |
-| `puppeteer_screenshot` | Capture screenshots | `name` (required), `selector` (optional), `width` (default: 800), `height` (default: 600) |
-| `puppeteer_click` | Click an element | `selector` (required) |
-| `puppeteer_fill` | Fill input field | `selector` (required), `value` (required) |
-| `puppeteer_select` | Select dropdown option | `selector` (required), `value` (required) |
-| `puppeteer_hover` | Hover over element | `selector` (required) |
-| `puppeteer_evaluate` | Execute JavaScript | `script` (required) |
+| `navigate` | Navigate to a URL | `url` (required), `waitUntil` (optional: 'load', 'domcontentloaded', 'networkidle0', 'networkidle2') |
+| `click` | Click an element | `selector` (required), `clickCount` (optional, default: 1) |
+| `type` | Type text into input | `selector` (required), `text` (required), `clear` (optional), `delay` (optional) |
+| `wait` | Wait for conditions | `selector` (optional), `timeout` (optional), `visible` (optional), `hidden` (optional) |
+| `evaluate` | Execute JavaScript | `code` (required) |
+| `page_info` | Get page information | `includeMetrics` (optional) |
+| `go_back` | Navigate back | None |
+| `go_forward` | Navigate forward | None |
+| `reload` | Reload page | `waitUntil` (optional) |
 
-### Example Usage
+### Examples
 
 ```javascript
 // Navigate to a page
-await puppeteer_navigate({ url: "https://example.com" });
+await navigate({ url: "https://example.com" });
 
 // Click a button
-await puppeteer_click({ selector: "#submit-button" });
+await click({ selector: "#submit-button" });
 
-// Fill a form
-await puppeteer_fill({ 
-  selector: "input[name='email']", 
-  value: "test@example.com" 
+// Type with clearing first
+await type({ 
+  selector: "#email", 
+  text: "user@example.com", 
+  clear: true 
 });
 
-// Take a screenshot
-await puppeteer_screenshot({ 
-  name: "homepage",
-  selector: ".main-content",
-  width: 1200,
-  height: 800
+// Wait for element to appear
+await wait({ 
+  selector: ".results", 
+  visible: true, 
+  timeout: 5000 
+});
+
+// Execute JavaScript
+await evaluate({ 
+  code: "document.title" 
 });
 ```
 
-## CDP MCP Tools
+## Visual Tools
 
-CDP provides low-level access to Chrome DevTools Protocol for deep browser inspection.
+Tools for screenshots and visual operations.
 
 ### Available Tools
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `cdp_connect` | Connect to Chrome DevTools | `targetId` (optional) |
-| `cdp_list_targets` | List all browser tabs | None |
-| `cdp_evaluate` | Execute JavaScript via CDP | `expression` (required) |
-| `cdp_get_console_messages` | Get console messages | `limit` (default: 10) |
-| `cdp_get_computed_style` | Get element's computed CSS | `selector` (required) |
+| `screenshot` | Smart screenshot with MCP token handling | `fullPage` (optional), `selector` (optional), `output` (optional: 'auto', 'file', 'base64'), `filename` (optional) |
+| `highlight` | Highlight elements | `selector` (required), `color` (optional), `duration` (optional) |
+| `get_element_info` | Get element details | `selector` (required) |
 
-### Example Usage
+### Screenshot Tool Details
+
+The `screenshot` tool automatically handles MCP token limits:
+
+#### Auto Mode (default)
+- Small screenshots (< 20KB): Returns base64 data
+- Large screenshots (≥ 20KB): Saves to disk and returns filepath
+
+#### Examples
 
 ```javascript
-// Connect to Chrome
-await cdp_connect();
+// Basic screenshot (auto mode)
+await screenshot({});
 
-// Execute JavaScript
-const title = await cdp_evaluate({ 
-  expression: "document.title" 
+// Full page screenshot (will save to file)
+await screenshot({ fullPage: true });
+
+// Element screenshot with custom filename
+await screenshot({ 
+  selector: ".header",
+  output: "file",
+  filename: "header-screenshot"
 });
 
-// Get console messages
-const logs = await cdp_get_console_messages({ 
-  limit: 5 
-});
-
-// Inspect styles
-const styles = await cdp_get_computed_style({ 
-  selector: ".header" 
+// Force base64 output (careful with large images)
+await screenshot({ 
+  output: "base64",
+  fullPage: true 
 });
 ```
 
-## When to Use Which Tool
+#### Response Formats
 
-### Use Puppeteer Tools for:
-- Page navigation
-- User interactions (clicks, typing)
-- Taking screenshots
-- High-level page automation
-- Simulating user behavior
-
-### Use CDP Tools for:
-- Console log monitoring
-- JavaScript execution with direct results
-- Style inspection and debugging
-- Low-level browser state access
-- Performance monitoring
-
-## Working with Both Tools Together
-
-Many tasks benefit from using both tool sets:
-
-```javascript
-// Example: Click button and verify console output
-await puppeteer_click({ selector: "#log-button" });
-const messages = await cdp_get_console_messages({ limit: 1 });
-
-// Example: Change styles and capture result
-await cdp_evaluate({ 
-  expression: "document.body.style.backgroundColor = 'red'" 
-});
-await puppeteer_screenshot({ name: "red-background" });
-
-// Example: Debug form submission
-await puppeteer_fill({ selector: "#email", value: "test@test.com" });
-await puppeteer_click({ selector: "#submit" });
-const errors = await cdp_get_console_messages({ limit: 5 });
+**Base64 Response:**
+```json
+{
+  "success": true,
+  "saved": false,
+  "data": "iVBORw0KGgoAAAANS...",
+  "format": "base64",
+  "size": 15360,
+  "sizeHuman": "15.0KB"
+}
 ```
 
-## Tool Limitations
+**File Response:**
+```json
+{
+  "success": true,
+  "saved": true,
+  "filepath": "screenshots/screenshot-1234567890.png",
+  "filename": "screenshot-1234567890.png",
+  "size": 1048576,
+  "sizeHuman": "1024.0KB"
+}
+```
 
-### Puppeteer Limitations
-- Requires Chrome to be running with debugging enabled
-- Screenshots return base64 encoded data
-- Some actions may need wait time between operations
+### Other Visual Tools
 
-### CDP Limitations
-- Must connect before using other CDP tools
-- Large responses may be truncated
-- Binary data (like images) is base64 encoded
-- Connection is stateful (persists between calls)
+```javascript
+// Highlight elements
+await highlight({ 
+  selector: ".important", 
+  color: "red",
+  duration: 3000 
+});
 
-## Error Handling
+// Get element information
+await get_element_info({ 
+  selector: "#header" 
+});
+// Returns: tagName, id, className, text, visibility, position, styles
+```
 
-Common errors and solutions:
+## Tool Response Patterns
 
-| Error | Solution |
-|-------|----------|
-| "Not connected to Chrome DevTools" | Run `cdp_connect` first |
-| "Chrome not found" | Start Chrome with `npm run chrome` |
-| "Element not found" | Verify selector exists, add wait if needed |
-| "Port already in use" | Check for existing Chrome instances |
+All tools follow consistent response patterns:
+
+### Success Response
+```json
+{
+  "success": true,
+  // Tool-specific data
+}
+```
+
+### Error Response
+Tools throw errors with descriptive messages:
+- "Element not found: [selector]"
+- "Navigation failed: [reason]"
+- "Evaluation failed: [error]"
 
 ## Best Practices
 
-1. **Always connect first**: Both tools need Chrome running
-2. **Use specific selectors**: ID selectors are most reliable
-3. **Handle async operations**: Add appropriate waits
-4. **Check console for errors**: Use `cdp_get_console_messages` regularly
-5. **Clean up state**: Close connections when done
+1. **Wait After Navigation**: Use `waitUntil: 'networkidle2'` for SPAs
+2. **Check Element Existence**: Use `wait` before interacting
+3. **Handle Dynamic Content**: Use `evaluate` for complex interactions
+4. **Screenshot Size**: Let auto mode handle token limits
+5. **Error Handling**: Tools throw descriptive errors - handle appropriately
 
 ## Advanced Usage
 
-### Custom Wait Conditions
+### Chaining Operations
 ```javascript
-// Wait for element before clicking
-await cdp_evaluate({ 
-  expression: `
+// Login flow example
+await navigate({ url: "https://example.com/login" });
+await wait({ selector: "#email", visible: true });
+await type({ selector: "#email", text: "user@example.com" });
+await type({ selector: "#password", text: "password" });
+await click({ selector: "#login-button" });
+await wait({ selector: ".dashboard", timeout: 10000 });
+```
+
+### Custom Waiting
+```javascript
+// Wait for specific text
+await evaluate({ 
+  code: `
     await new Promise(resolve => {
-      const observer = new MutationObserver(() => {
-        if (document.querySelector('.dynamic-content')) {
-          observer.disconnect();
+      const check = setInterval(() => {
+        if (document.body.textContent.includes('Success')) {
+          clearInterval(check);
           resolve();
         }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
+      }, 100);
     });
   `
 });
-await puppeteer_click({ selector: ".dynamic-content" });
 ```
 
-### Performance Monitoring
-```javascript
-// Measure page load time
-await cdp_evaluate({ expression: "performance.mark('start')" });
-await puppeteer_navigate({ url: "https://example.com" });
-await cdp_evaluate({ expression: "performance.mark('end')" });
-const metrics = await cdp_evaluate({ 
-  expression: "performance.measure('pageLoad', 'start', 'end'); performance.getEntriesByName('pageLoad')[0].duration" 
-});
-```
+## Environment Variables
+
+Configure BabaYaga behavior:
+
+- `HEADLESS`: Run browser in headless mode
+- `START_URL`: Initial page to load
+- `SCREENSHOT_PATH`: Directory for screenshots
+- `BROWSER_ARGS`: Additional Chrome arguments
