@@ -1,0 +1,51 @@
+{
+  "name": "babayaga-honeypot",
+  "version": "1.0.0",
+  "description": "Agent testing validation and verification server for the Babayaga ecosystem",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "start:dist": "node dist/index.js",
+    "dev": "tsx --watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "keywords": [
+    "testing",
+    "validation",
+    "mcp",
+    "agent-verification",
+    "honeypot",
+    "babayaga",
+    "trust",
+    "evidence-collection"
+  ],
+  "author": "Babayaga Team",
+  "license": "MIT",
+  "dependencies": {
+    "@babayaga/shared": "file:../shared",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.8.3",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babayaga/babayaga.git",
+    "directory": "babayaga-honeypot"
+  },
+  "bugs": {
+    "url": "https://github.com/babayaga/babayaga/issues"
+  },
+  "homepage": "https://github.com/babayaga/babayaga/tree/main/babayaga-honeypot#readme"
+}

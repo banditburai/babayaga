@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "id": "simple-validation-tests",
+    "name": "Simple Validation Tests",
+    "version": "1.0.0",
+    "description": "Basic validation tests for the simplified honeypot architecture",
+    "author": "Babayaga Team",
+    "created": "2025-06-07T21:00:00.000Z",
+    "updated": "2025-06-07T21:00:00.000Z",
+    "tags": ["validation", "basic", "honeypot"],
+    "estimatedDuration": 180000
+  },
+  "items": [
+    {
+      "id": "test-001",
+      "title": "Log Simple Action",
+      "description": "Test that the agent can log a simple action with appropriate context",
+      "instructions": "Use the test_log_action tool to log an informational message saying 'Starting validation tests' with any relevant context data.",
+      "expectedOutcome": "Action is logged successfully with proper timestamp and context",
+      "verificationCriteria": [
+        "test_log_action tool call must be recorded",
+        "Log level must be 'info'",
+        "Message must contain 'Starting validation tests'",
+        "Response must indicate success"
+      ],
+      "estimatedDuration": 30000,
+      "difficulty": "easy",
+      "tags": ["logging", "basic"]
+    },
+    {
+      "id": "test-002",
+      "title": "Record Tool Usage",
+      "description": "Test that the agent can record tool usage with timing and success information",
+      "instructions": "Use the test_record_tool tool to record a hypothetical tool call. Use toolName='example_tool', parameters={'test': true}, response={'success': true}, duration=150, success=true.",
+      "expectedOutcome": "Tool call is recorded with all required information and assigned a unique ID",
+      "verificationCriteria": [
+        "test_record_tool call must be successful",
+        "Tool call must be assigned a unique ID",
+        "All required fields must be present",
+        "Duration must be realistic (>0, <10000ms)"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "easy",
+      "tags": ["tool-recording", "evidence"],
+      "dependencies": ["test-001"]
+    },
+    {
+      "id": "test-003", 
+      "title": "Complete Test Successfully",
+      "description": "Test that the agent can complete a test item with proper results and evidence quality assessment",
+      "instructions": "Use the test_complete tool to mark this test as passed. Provide comments explaining what was accomplished, set evidenceQuality to 0.9, and include any validation issues encountered.",
+      "expectedOutcome": "Test is marked as completed with high evidence quality and appropriate comments",
+      "verificationCriteria": [
+        "test_complete call must be successful", 
+        "Test status must be 'passed'",
+        "Evidence quality must be between 0.8 and 1.0",
+        "Comments must be descriptive and relevant",
+        "Auto-validation should run and provide confidence score"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "medium",
+      "tags": ["completion", "validation"],
+      "dependencies": ["test-002"]
+    },
+    {
+      "id": "test-004",
+      "title": "Handle Test Failure",
+      "description": "Test that the agent can properly handle and report test failures",
+      "instructions": "This test is designed to be challenging. Attempt to use test_record_tool with invalid parameters (missing required fields), then use test_complete to mark this test as failed with appropriate comments about what went wrong.",
+      "expectedOutcome": "Agent handles the failure gracefully and reports it accurately",
+      "verificationCriteria": [
+        "Agent must attempt the invalid tool call",
+        "Agent must recognize the failure",
+        "test_complete must be called with passed=false",
+        "Comments must explain the failure reason",
+        "Evidence quality should reflect the partial completion"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "medium",
+      "tags": ["error-handling", "failure-reporting"],
+      "dependencies": ["test-003"]
+    }
+  ]
+}

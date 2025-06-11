@@ -1,0 +1,68 @@
+[
+  {
+    "id": "test_001",
+    "title": "Basic Element Measurement",
+    "description": "Test the qa_measure_element tool on a simple webpage element",
+    "testInstructions": "Navigate to a test webpage and measure the dimensions of a button element using the qa_measure_element tool from babayaga-qe server",
+    "expectedOutcome": "Tool should return accurate width, height, position coordinates and other measurement data",
+    "verificationCriteria": [
+      "Tool call completes successfully",
+      "Returned data includes width and height values",
+      "Position coordinates are present",
+      "No error messages in response"
+    ]
+  },
+  {
+    "id": "test_002", 
+    "title": "Screenshot Capture",
+    "description": "Test the browser screenshot functionality through MCP tools",
+    "testInstructions": "Use the browser_take_screenshot tool to capture a screenshot of the current page",
+    "expectedOutcome": "Screenshot file should be created and accessible",
+    "verificationCriteria": [
+      "Screenshot tool returns success status",
+      "File path is provided in response",
+      "Screenshot file exists at specified path",
+      "File size is greater than 0 bytes"
+    ]
+  },
+  {
+    "id": "test_003",
+    "title": "Interactive Element Testing", 
+    "description": "Test clicking on an interactive element and verifying the result",
+    "testInstructions": "Navigate to a webpage with clickable elements, take a snapshot, click on a button using browser_click, then take another snapshot to verify the action",
+    "expectedOutcome": "Click action should be performed successfully and state change should be visible",
+    "verificationCriteria": [
+      "Initial snapshot shows element is clickable",
+      "Click action completes without errors", 
+      "Second snapshot shows evidence of interaction (page change, modal, etc)",
+      "All tool calls have realistic execution times"
+    ]
+  },
+  {
+    "id": "test_004",
+    "title": "Form Input Testing",
+    "description": "Test typing into form fields and submitting data",
+    "testInstructions": "Find a form on a webpage, type text into input fields using browser_type, then submit the form",
+    "expectedOutcome": "Text should be entered successfully and form submission should work",
+    "verificationCriteria": [
+      "Text input tool calls succeed",
+      "Form submission completes",
+      "Page shows confirmation or response to submission",
+      "Network requests are captured during form submission"
+    ]
+  },
+  {
+    "id": "test_005",
+    "title": "Multi-step Workflow",
+    "description": "Complete a complex multi-step user workflow involving navigation, interaction, and verification",
+    "testInstructions": "Navigate to a webpage, perform a sequence of actions (search, click results, navigate back), and document each step with screenshots and measurements",
+    "expectedOutcome": "Complete workflow should execute successfully with comprehensive evidence collection",
+    "verificationCriteria": [
+      "All navigation steps complete successfully",
+      "Multiple screenshots captured showing workflow progress",
+      "Element measurements taken at key points",
+      "No broken tool calls or timeouts",
+      "Evidence quality score above 75%"
+    ]
+  }
+]

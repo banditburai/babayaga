@@ -1,0 +1,236 @@
+{
+  "metadata": {
+    "id": "httpbin-form-tests",
+    "name": "HTTPBin Form Comprehensive Tests",
+    "version": "1.0.0",
+    "description": "Comprehensive browser automation and measurement tests using the HTTPBin pizza order form",
+    "author": "Babayaga Team",
+    "created": "2025-06-07T23:00:00.000Z",
+    "updated": "2025-06-07T23:00:00.000Z",
+    "tags": ["browser", "form", "measurement", "validation", "httpbin"],
+    "estimatedDuration": 600000,
+    "targetUrl": "https://httpbin.org/forms/post"
+  },
+  "items": [
+    {
+      "id": "form-001",
+      "title": "Navigate to HTTPBin Form",
+      "description": "Navigate to the HTTPBin form page and verify it loads correctly",
+      "instructions": "Navigate to https://httpbin.org/forms/post and verify the page loads. Log that navigation was successful.",
+      "expectedOutcome": "Page loads successfully with all form elements visible",
+      "verificationCriteria": [
+        "Navigation must complete successfully",
+        "Page URL must be https://httpbin.org/forms/post",
+        "Action must be logged with test_log_action",
+        "No errors should occur during navigation"
+      ],
+      "estimatedDuration": 30000,
+      "difficulty": "easy",
+      "tags": ["navigation", "setup"]
+    },
+    {
+      "id": "form-002",
+      "title": "Take Form Screenshot",
+      "description": "Capture a screenshot of the entire form for visual verification",
+      "instructions": "Take a screenshot of the form page. Store it as evidence using appropriate tools. Log the action with details about the screenshot.",
+      "expectedOutcome": "Screenshot is captured and stored as evidence",
+      "verificationCriteria": [
+        "Screenshot must be captured successfully",
+        "Screenshot must be stored as evidence",
+        "Action must be logged with test_log_action",
+        "Screenshot filename or reference must be recorded"
+      ],
+      "estimatedDuration": 20000,
+      "difficulty": "easy",
+      "tags": ["screenshot", "evidence"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-003",
+      "title": "Measure Text Input Dimensions",
+      "description": "Measure the dimensions of the customer name text input field",
+      "instructions": "Use measurement tools to get the exact dimensions (width, height, position) of the 'Customer name' text input field. Record the measurements using test_record_tool.",
+      "expectedOutcome": "Accurate measurements of the text input field are recorded",
+      "verificationCriteria": [
+        "Measurements must include width, height, x, and y coordinates",
+        "Values must be positive numbers",
+        "Tool call must be recorded with test_record_tool",
+        "Duration must be realistic (50-500ms)"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "medium",
+      "tags": ["measurement", "input"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-004",
+      "title": "Fill Customer Information",
+      "description": "Fill in the customer name, telephone, and email fields",
+      "instructions": "Fill the following fields: Customer name: 'Test User', Telephone: '555-1234', Email: 'test@example.com'. Log each action and record tool usage.",
+      "expectedOutcome": "All customer information fields are filled correctly",
+      "verificationCriteria": [
+        "All three fields must be filled with the specified values",
+        "Each field interaction must be logged",
+        "Tool usage must be recorded for each field",
+        "No errors should occur during typing"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "easy",
+      "tags": ["form-filling", "input"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-005",
+      "title": "Select Pizza Size",
+      "description": "Select a pizza size from the radio button group",
+      "instructions": "Click on the 'Medium' radio button for pizza size. Verify it becomes selected. Log the action and record the tool usage with appropriate timing.",
+      "expectedOutcome": "Medium pizza size is selected",
+      "verificationCriteria": [
+        "Medium radio button must be selected",
+        "Only one radio button should be selected",
+        "Action must be logged",
+        "Tool usage must be recorded with realistic timing"
+      ],
+      "estimatedDuration": 30000,
+      "difficulty": "easy",
+      "tags": ["radio-button", "selection"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-006",
+      "title": "Measure Radio Button Group",
+      "description": "Measure the dimensions and spacing of the pizza size radio button group",
+      "instructions": "Measure the entire 'Pizza Size' fieldset/group dimensions. Also measure the spacing between radio buttons if possible. Record all measurements.",
+      "expectedOutcome": "Accurate measurements of the radio button group layout",
+      "verificationCriteria": [
+        "Group dimensions must be measured",
+        "Measurements must include the fieldset boundaries",
+        "Tool calls must be recorded with appropriate timing",
+        "Evidence quality should be high (>0.8)"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "hard",
+      "tags": ["measurement", "layout", "spacing"],
+      "dependencies": ["form-005"]
+    },
+    {
+      "id": "form-007",
+      "title": "Select Multiple Toppings",
+      "description": "Select multiple pizza toppings using checkboxes",
+      "instructions": "Select 'Bacon' and 'Extra Cheese' toppings by clicking their checkboxes. Verify both are checked. Log each action separately.",
+      "expectedOutcome": "Both specified toppings are selected",
+      "verificationCriteria": [
+        "Both checkboxes must be checked",
+        "Each checkbox click must be logged separately",
+        "Tool usage must be recorded for each interaction",
+        "Checkboxes should remain checked after selection"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "easy",
+      "tags": ["checkbox", "multiple-selection"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-008",
+      "title": "Analyze Form Layout Grid",
+      "description": "Analyze the overall form layout and element alignment",
+      "instructions": "Use layout analysis tools to check if form elements are properly aligned. Measure consistent spacing between form groups. Record findings about the form's grid structure.",
+      "expectedOutcome": "Comprehensive analysis of form layout and alignment",
+      "verificationCriteria": [
+        "Layout analysis must cover multiple elements",
+        "Spacing consistency must be evaluated",
+        "Alignment issues (if any) must be noted",
+        "Analysis must be recorded with evidence quality assessment"
+      ],
+      "estimatedDuration": 90000,
+      "difficulty": "hard",
+      "tags": ["layout", "grid", "analysis"],
+      "dependencies": ["form-003", "form-006"]
+    },
+    {
+      "id": "form-009",
+      "title": "Fill Delivery Instructions",
+      "description": "Fill in the delivery time and instructions text fields",
+      "instructions": "Fill 'Preferred delivery time' with '6:00 PM' and 'Delivery instructions' with 'Please ring doorbell twice'. Log actions and measure typing performance.",
+      "expectedOutcome": "Both delivery fields are filled with specified text",
+      "verificationCriteria": [
+        "Both fields must contain the exact specified text",
+        "Typing duration must be recorded",
+        "Actions must be logged with timestamps",
+        "No typing errors should occur"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "easy",
+      "tags": ["form-filling", "textarea"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-010",
+      "title": "Measure Submit Button",
+      "description": "Measure the submit button dimensions and position",
+      "instructions": "Measure the 'Submit order' button dimensions and position. Also check its distance from the last form field. Record all measurements.",
+      "expectedOutcome": "Accurate measurements of submit button and its spacing",
+      "verificationCriteria": [
+        "Button dimensions must be measured",
+        "Button position must be recorded",
+        "Distance from previous element must be calculated",
+        "Measurements must be realistic for a button element"
+      ],
+      "estimatedDuration": 45000,
+      "difficulty": "medium",
+      "tags": ["measurement", "button", "spacing"],
+      "dependencies": ["form-001"]
+    },
+    {
+      "id": "form-011",
+      "title": "Verify Form State Before Submit",
+      "description": "Take a screenshot and verify all form fields are filled correctly",
+      "instructions": "Take a final screenshot showing the completed form. Verify all fields contain the expected values. Log a summary of the form state.",
+      "expectedOutcome": "Form is completely filled with all expected values",
+      "verificationCriteria": [
+        "Screenshot must show completed form",
+        "All fields must contain correct values",
+        "Form state summary must be logged",
+        "Evidence quality must be high"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "medium",
+      "tags": ["verification", "screenshot", "state"],
+      "dependencies": ["form-004", "form-005", "form-007", "form-009"]
+    },
+    {
+      "id": "form-012",
+      "title": "Submit Form",
+      "description": "Submit the form and verify the response",
+      "instructions": "Click the 'Submit order' button. Wait for the response page to load. Log the submission action and any response details.",
+      "expectedOutcome": "Form is submitted successfully and response is received",
+      "verificationCriteria": [
+        "Submit button must be clicked",
+        "Page must navigate to response",
+        "Response must be logged",
+        "No errors should occur during submission"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "medium",
+      "tags": ["submission", "interaction"],
+      "dependencies": ["form-011"]
+    },
+    {
+      "id": "form-013",
+      "title": "Analyze Response Data",
+      "description": "Analyze the form submission response to verify all data was sent correctly",
+      "instructions": "Extract and analyze the response data. Verify all form fields were submitted with correct values. Record the analysis results.",
+      "expectedOutcome": "Response contains all submitted form data correctly",
+      "verificationCriteria": [
+        "Response must contain all form field values",
+        "Values must match what was entered",
+        "Analysis must be recorded as evidence",
+        "Test completion must include comprehensive summary"
+      ],
+      "estimatedDuration": 60000,
+      "difficulty": "medium",
+      "tags": ["response", "validation", "analysis"],
+      "dependencies": ["form-012"]
+    }
+  ]
+}

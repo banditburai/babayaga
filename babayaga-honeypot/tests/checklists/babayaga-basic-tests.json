@@ -1,0 +1,142 @@
+[
+  {
+    "id": "test-001",
+    "title": "Verify CDP Connection Health",
+    "description": "Test that the agent can successfully connect to the CDP server and verify its health status",
+    "testInstructions": "Use the cdp_health_check tool to verify the CDP server is responding and healthy. Log the connection status, target availability, and system resources.",
+    "expectedOutcome": "Health check returns 'healthy' status with active CDP connection and at least 1 available target",
+    "verificationCriteria": [
+      "Health check tool call must be recorded",
+      "Response must show 'overall: healthy'",
+      "Must include valid target information",
+      "Response time must be reasonable (<5 seconds)"
+    ]
+  },
+  {
+    "id": "test-002", 
+    "title": "Sync CDP with Playwright",
+    "description": "Test that the agent can synchronize CDP connection with a Playwright browser instance",
+    "testInstructions": "Use the cdp_sync_playwright tool to synchronize the CDP connection. Verify that the sync is successful and that enabled domains include DOM, CSS, Runtime, and Page.",
+    "expectedOutcome": "Sync returns 'synchronized: true' with proper domain enablement and target connection details",
+    "verificationCriteria": [
+      "Sync tool call must be recorded",
+      "Response must show 'synchronized: true'",
+      "Must include enabled domains: DOM, CSS, Runtime, Page",
+      "Must include connected target information"
+    ]
+  },
+  {
+    "id": "test-003",
+    "title": "Navigate to Test Page",
+    "description": "Test that the agent can navigate to a test HTML page for measurement testing",
+    "testInstructions": "Navigate to tests/fixtures/html/basic-test.html using browser navigation. Take a screenshot after navigation to confirm page loaded.",
+    "expectedOutcome": "Browser successfully navigates to the test page and page content is visible",
+    "verificationCriteria": [
+      "Navigation action must be logged",
+      "Page URL must match expected test page",
+      "Screenshot must be captured showing page content",
+      "No navigation errors should occur"
+    ]
+  },
+  {
+    "id": "test-004",
+    "title": "Measure Basic Element",
+    "description": "Test measuring a simple element on the test page using qa_measure_element",
+    "testInstructions": "Use qa_measure_element to measure an element with selector '#test-element-1'. Record all measurement data including dimensions, box model, typography, and visibility.",
+    "expectedOutcome": "Element measurement returns complete data with reasonable dimensions and proper box model information",
+    "verificationCriteria": [
+      "Tool call with correct selector must be recorded", 
+      "Response must include dimensions (width, height, x, y)",
+      "Response must include box model data",
+      "Response must include typography information",
+      "Response must include visibility data",
+      "Dimensions must be > 0 for visible elements"
+    ]
+  },
+  {
+    "id": "test-005",
+    "title": "Calculate Distance Between Elements",
+    "description": "Test measuring distances between two elements using qa_measure_distances",
+    "testInstructions": "Use qa_measure_distances to calculate the distance between '#test-element-1' and '#test-element-2'. Record horizontal, vertical, and diagonal distances.",
+    "expectedOutcome": "Distance calculation returns accurate measurements and spatial relationships between the two elements",
+    "verificationCriteria": [
+      "Tool call with both element selectors must be recorded",
+      "Response must include horizontal distance",
+      "Response must include vertical distance", 
+      "Response must include diagonal distance",
+      "Response must include spatial relationship (left/right/above/below)",
+      "Distances must be reasonable (not negative, not impossibly large)"
+    ]
+  },
+  {
+    "id": "test-006",
+    "title": "Analyze Grid Layout",
+    "description": "Test grid analysis functionality on a collection of elements",
+    "testInstructions": "Use qa_analyze_layout_grid with selectors ['.grid-item-1', '.grid-item-2', '.grid-item-3', '.grid-item-4'] to analyze the grid layout. Look for consistent spacing and alignment.",
+    "expectedOutcome": "Grid analysis detects the layout structure and reports on spacing consistency and alignment",
+    "verificationCriteria": [
+      "Tool call with array of selectors must be recorded",
+      "Response must include grid structure information",
+      "Response must include spacing measurements",
+      "Response must include alignment analysis",
+      "Analysis should complete in reasonable time (<10 seconds)"
+    ]
+  },
+  {
+    "id": "test-007",
+    "title": "Handle Non-Existent Element",
+    "description": "Test error handling when measuring an element that doesn't exist",
+    "testInstructions": "Attempt to use qa_measure_element with selector '#non-existent-element-12345'. Verify that appropriate error handling occurs and error message is clear.",
+    "expectedOutcome": "Tool returns clear error message indicating element was not found",
+    "verificationCriteria": [
+      "Tool call with non-existent selector must be recorded",
+      "Tool call must result in error (success: false)",
+      "Error message must be clear and helpful",
+      "Error message must mention element not found",
+      "Agent must log the error appropriately"
+    ]
+  },
+  {
+    "id": "test-008",
+    "title": "Performance Timing Validation",
+    "description": "Test that measurement operations complete within reasonable time limits",
+    "testInstructions": "Perform 5 consecutive measurements of different elements and verify that each measurement completes within 100ms. Log the timing for each measurement.",
+    "expectedOutcome": "All measurements complete within performance thresholds and timing data is recorded",
+    "verificationCriteria": [
+      "5 separate tool calls must be recorded",
+      "Each tool call duration must be logged",
+      "No tool call should take longer than 100ms",
+      "Average measurement time should be reasonable (20-80ms)",
+      "All measurements should succeed"
+    ]
+  },
+  {
+    "id": "test-009",
+    "title": "Screenshot Evidence Collection",
+    "description": "Test that the agent captures screenshots as evidence during testing",
+    "testInstructions": "Take screenshots before and after performing element measurements. Ensure screenshots are saved with appropriate filenames and include relevant context.",
+    "expectedOutcome": "Screenshots are captured and saved as evidence with proper metadata",
+    "verificationCriteria": [
+      "At least 2 screenshots must be captured",
+      "Screenshots must be saved to accessible file paths",
+      "Screenshot capture must be logged with file paths",
+      "Screenshots should show relevant page content",
+      "Screenshot file sizes should be reasonable (>10KB, <5MB)"
+    ]
+  },
+  {
+    "id": "test-010",
+    "title": "Complete Test Report Generation",
+    "description": "Test that the agent can generate a comprehensive test report with all evidence",
+    "testInstructions": "Generate a final test report that includes all performed tests, evidence collected, any errors encountered, and overall success metrics. Include recommendations for any issues found.",
+    "expectedOutcome": "Comprehensive test report is generated with complete evidence and clear summary",
+    "verificationCriteria": [
+      "Report must include summary of all completed tests",
+      "Report must include evidence counts (logs, screenshots, tool calls)",
+      "Report must include success/failure rates",
+      "Report must include total execution time",
+      "Report must include any recommendations or issues found",
+      "Report must be properly formatted and readable"
+    ]
+  }
+]
