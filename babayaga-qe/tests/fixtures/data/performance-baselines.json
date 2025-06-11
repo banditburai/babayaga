@@ -1,0 +1,32 @@
+{
+  "elementMeasurement": {
+    "averageTime": 40,
+    "maxAcceptableTime": 50,
+    "minTime": 20,
+    "description": "Single element measurement performance baseline"
+  },
+  "distanceCalculation": {
+    "averageTime": 25,
+    "maxAcceptableTime": 30,
+    "minTime": 15,
+    "description": "Distance calculation performance baseline"
+  },
+  "gridAnalysis": {
+    "averageTimePerElement": 100,
+    "maxAcceptableTimePerElement": 150,
+    "minTimePerElement": 50,
+    "description": "Grid analysis per element performance baseline"
+  },
+  "cdpHealthCheck": {
+    "averageTime": 10,
+    "maxAcceptableTime": 100,
+    "minTime": 1,
+    "description": "CDP health check performance baseline"
+  },
+  "memoryUsage": {
+    "maxIncrease": 2,
+    "unit": "MB",
+    "per100Operations": true,
+    "description": "Maximum acceptable memory increase per 100 operations"
+  }
+}

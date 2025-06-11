@@ -1,16 +1,20 @@
 {
   "mcpServers": {
-    "puppeteer-babayaga": {
-      "command": "npm",
-      "args": ["run", "start:puppeteer-mcp"],
-      "cwd": "./babayaga",
-      "env": {}
+    "babayaga-qe": {
+      "command": "pnpm",
+      "args": [
+        "run",
+        "start"
+      ],
+      "directory": "/path/to/babayaga/babayaga-qe"
     },
-    "cdp-babayaga": {
-      "command": "npm",
-      "args": ["run", "start:cdp-mcp"],
-      "cwd": "./babayaga",
-      "env": {}
+    "babayaga-honeypot": {
+      "command": "pnpm",
+      "args": [
+        "run",
+        "start"
+      ],
+      "directory": "/path/to/babayaga/babayaga-honeypot"
     }
   }
 }

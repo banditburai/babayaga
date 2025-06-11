@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Babayaga-QE Test Page</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .item {
+            background: #f0f0f0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .visible {
+            background: #4CAF50;
+            color: white;
+            padding: 10px;
+            margin: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .invisible {
+            visibility: hidden;
+            background: #FF9800;
+            padding: 10px;
+            margin: 5px;
+        }
+        .zero-width {
+            width: 0;
+            overflow: hidden;
+            background: #2196F3;
+        }
+        .zero-height {
+            height: 0;
+            overflow: hidden;
+            background: #9C27B0;
+        }
+        .absolute {
+            position: absolute;
+            top: 400px;
+            left: 300px;
+            background: #F44336;
+            color: white;
+            padding: 10px;
+        }
+        .fixed {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00BCD4;
+            color: white;
+            padding: 10px;
+        }
+        .transformed {
+            transform: rotate(15deg);
+            background: #FFC107;
+            padding: 10px;
+            margin: 30px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="main-title">Babayaga-QE Test Page</h1>
+    
+    <section id="grid-section">
+        <h2>Grid Layout Test</h2>
+        <div class="grid" id="main-grid">
+            <div class="item" data-index="1">Item 1</div>
+            <div class="item" data-index="2">Item 2</div>
+            <div class="item" data-index="3">Item 3</div>
+            <div class="item" data-index="4">Item 4</div>
+            <div class="item" data-index="5">Item 5</div>
+            <div class="item" data-index="6">Item 6</div>
+            <div class="item" data-index="7">Item 7</div>
+            <div class="item" data-index="8">Item 8</div>
+        </div>
+    </section>
+    
+    <section id="edge-cases">
+        <h2>Edge Case Elements</h2>
+        <div class="visible" id="normal">Normal Visible Element</div>
+        <div class="hidden" id="hidden">Hidden Element (display:none)</div>
+        <div class="invisible" id="invisible">Invisible Element (visibility:hidden)</div>
+        <div class="zero-width" id="zero-width">Zero Width Element</div>
+        <div class="zero-height" id="zero-height">Zero Height Element</div>
+        <div class="absolute" id="absolute">Absolute Positioned</div>
+        <div class="fixed" id="fixed">Fixed Positioned</div>
+        <div class="transformed" id="transformed">Transformed Element</div>
+    </section>
+    
+    <section id="complex-selectors">
+        <h2>Complex Selector Tests</h2>
+        <div class="parent">
+            <div class="child first">First Child</div>
+            <div class="child">Middle Child</div>
+            <div class="child last">Last Child</div>
+        </div>
+        <div data-testid="special-element" role="button">Attribute Selector Test</div>
+        <button type="submit" class="btn-primary">Submit Button</button>
+    </section>
+</body>
+</html>

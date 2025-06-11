@@ -1,152 +1,183 @@
-# 🔮 BabaYaga
+# Babayaga - Browser Testing & QA Tools
 
-> Unified browser automation framework with MCP (Model Context Protocol) integration
+A comprehensive suite of browser testing and quality assurance tools using Chrome DevTools Protocol (CDP) and Playwright, integrated with Claude Code via Model Context Protocol (MCP).
 
-[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-purple)](https://github.com/modelcontextprotocol)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org/)
+## Features
 
-## What is BabaYaga?
+### Playwright MCP Server
+- **Browser Automation**: Navigate, click, type, screenshot
+- **Cross-browser Support**: Chrome, Firefox, Safari
+- **Rich Selectors**: CSS, text, role-based element selection
+- **Screenshot & PDF Generation**: Visual testing capabilities
+- **Console & Network Monitoring**: Debug and performance testing
 
-BabaYaga is a streamlined browser automation MCP server that provides AI agents with direct Puppeteer control. Built with a unified architecture, it eliminates the complexity of multi-process coordination while offering smart features like automatic screenshot handling for MCP token limits.
+### Babayaga QA Server (CDP-based)
+- **Element Measurement**: Precise dimension and positioning analysis
+- **Layout Analysis**: Grid alignment and spacing consistency
+- **Distance Calculation**: Spatial relationships between elements
+- **Health Monitoring**: CDP connection and target management
+- **Binary Data Handling**: Automatic screenshot and file processing
 
-### ✨ Key Features
+## Quick Setup
 
-- 🎯 **Single Process Architecture** - Everything runs in one Node.js process
-- 🖼️ **Smart Screenshot Tool** - Automatically handles MCP token limits
-- 🛠️ **Modular Tool System** - Organized by capability (browser, visual, performance)
-- 📝 **Full TypeScript** - Type-safe implementation throughout
-- 🚀 **Direct Puppeteer Control** - No proxy layers or IPC complexity
-- 🔧 **Extensible** - Easy to add custom tools
-
-## Installation
-
-### 🚀 Quick Start
+### 1. Clone and Install Dependencies
 
 ```bash
-# Clone the repository
-git clone https://github.com/banditburai/babayaga.git
-cd babayaga
-
-# Install dependencies
+# Install Playwright MCP dependencies
+cd playwright-mcp
 npm install
-
-# Build TypeScript
 npm run build
 
-# Start the MCP server
-npm start
+# Install Babayaga QA dependencies  
+cd ../babayaga-qe
+npm install
+npm run build
 ```
 
-### 🤖 Claude Desktop Integration
+### 2. Configure MCP Servers
 
-Add BabaYaga to your Claude desktop configuration:
+**IMPORTANT**: Use the `.mcp.json` approach to avoid connection errors.
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**Linux**: `~/.config/Claude/claude_desktop_config.json`
+Copy the example configuration:
+```bash
+cp .mcp.json.example .mcp.json
+```
 
+Update the paths in `.mcp.json` to match your system:
 ```json
 {
   "mcpServers": {
-    "babayaga": {
-      "command": "node",
-      "args": ["/path/to/babayaga/build/index.js"],
-      "env": {
-        "START_URL": "https://example.com"
-      }
+    "playwright-mcp": {
+      "command": "/opt/homebrew/bin/node",
+      "args": [
+        "/absolute/path/to/babayaga/playwright-mcp/lib/browserServer.js"
+      ]
+    },
+    "babayaga-qe": {
+      "command": "/opt/homebrew/bin/tsx",
+      "args": [
+        "src/index.ts"
+      ],
+      "directory": "/absolute/path/to/babayaga/babayaga-qe"
     }
   }
 }
 ```
 
+### 3. Start Claude Code
+
+When you start Claude Code in this directory, it will:
+1. Auto-detect the `.mcp.json` configuration
+2. Prompt you to approve the MCP servers
+3. Automatically start the servers with proper paths
+
+## Configuration Notes
+
+### Why Use `.mcp.json`?
+
+The project-local `.mcp.json` configuration approach is **strongly recommended** because:
+
+- ✅ **Avoids MCP Error -32000**: The manual `claude mcp add` approach often causes "Connection closed" errors
+- ✅ **Auto-detection**: Claude Code automatically finds and configures servers
+- ✅ **Full Paths**: Resolves PATH issues that cause `npx` and relative path failures
+- ✅ **Project Isolation**: Each project has its own MCP server configuration
+
+### Manual Configuration (NOT Recommended)
+
+If you must use manual configuration, ensure you use full paths:
+```bash
+# This often fails with -32000 errors:
+claude mcp add playwright "npx playwright-mcp"
+
+# This works better but still less reliable:
+claude mcp add-json playwright '{"command": "/opt/homebrew/bin/node", "args": ["lib/browserServer.js"], "directory": "/full/path/to/playwright-mcp"}'
+```
+
+## Browser Setup
+
+### For Playwright
+No additional setup required - Playwright manages browsers automatically.
+
+### For Babayaga QA (CDP)
+Start Chrome with debugging enabled:
+```bash
+google-chrome --remote-debugging-port=9222 --remote-debugging-address=127.0.0.1
+```
+
 ## Available Tools
 
-### Browser Control
-- `navigate` - Navigate to URLs
-- `click` - Click elements
-- `type` - Type text
-- `wait` - Wait for conditions
-- `evaluate` - Execute JavaScript
-- `page_info` - Get page information
-- `go_back` / `go_forward` - History navigation
-- `reload` - Reload page
+### Playwright Tools
+- `browser_navigate` - Navigate to URLs
+- `browser_screenshot` - Take screenshots
+- `browser_click` - Click elements
+- `browser_type` - Type text into fields
+- `browser_select_option` - Select dropdown options
+- `browser_console_messages` - Get console output
+- `browser_network_requests` - Monitor network traffic
+- And many more...
 
-### Visual Tools
-- `screenshot` - Smart screenshot tool that automatically handles MCP token limits
-  - Auto mode: Returns base64 for small images, saves to disk for large ones
-  - `output: "file"` - Always save to disk
-  - `output: "base64"` - Always return base64 (may hit token limits)
-- `highlight` - Highlight elements
-- `get_element_info` - Get element details
+### Babayaga QA Tools
+- `cdp_send_command` - Send raw CDP commands
+- `cdp_list_targets` - List browser targets
+- `cdp_connect_target` - Connect to specific targets
+- `cdp_health_check` - Monitor connection health
+- `qa_measure_element` - Measure element dimensions
+- `qa_measure_distances` - Calculate element distances
+- `qa_analyze_layout_grid` - Analyze layout consistency
 
-## Configuration
+## Troubleshooting
 
-Environment variables:
-- `HEADLESS` - Run browser in headless mode
-- `SCREENSHOT_PATH` - Directory for screenshots (default: `./screenshots`)
-- `BROWSER_ARGS` - Comma-separated browser arguments
-- `START_URL` - URL to navigate to on startup (default: `https://wikipedia.org`)
+### MCP Connection Errors
+
+If you see `MCP error -32000: Connection closed`:
+
+1. **Check your configuration**: Ensure you're using `.mcp.json` with full paths
+2. **Restart Claude Code**: Exit and restart to reload configuration
+3. **Check file permissions**: Ensure executables are accessible
+4. **Verify paths**: Use `which node` and `which tsx` to find correct paths
+
+### Node.js Path Issues
+
+Find your Node.js path:
+```bash
+which node      # Usually /opt/homebrew/bin/node or /usr/local/bin/node
+which tsx       # Usually /opt/homebrew/bin/tsx
+```
+
+Update `.mcp.json` with the correct paths for your system.
+
+### Browser Connection Issues
+
+For CDP-based tools (Babayaga QA):
+1. Ensure Chrome is running with `--remote-debugging-port=9222`
+2. Test connection: `curl http://localhost:9222/json`
+3. Check firewall settings if using remote debugging
 
 ## Development
 
-```bash
-npm run dev       # Watch mode
-npm run build     # Build TypeScript
-npm run lint      # Run linter
-npm run typecheck # Type checking
-```
+### Adding New Tools
 
-## Usage Examples
+1. **Playwright**: Extend `playwright-mcp/src/tools/`
+2. **Babayaga**: Extend `babayaga-qe/src/measurements/`
 
-### As MCP Server
-
-The primary use case is as an MCP server for Claude:
+### Testing
 
 ```bash
-npm start
+# Test Playwright MCP
+cd playwright-mcp && npm test
+
+# Test Babayaga QA
+cd babayaga-qe && npm run typecheck
 ```
-
-### As a Library
-
-```typescript
-import { UnifiedBabaYaga } from 'babayaga';
-
-const babayaga = new UnifiedBabaYaga({
-  headless: false,
-  screenshotPath: './screenshots'
-});
-
-// Register custom tool
-babayaga.registerTool({
-  name: 'my_tool',
-  description: 'Custom tool',
-  inputSchema: { type: 'object', properties: {} },
-  handler: async (args, { page }) => {
-    // Tool implementation
-    return { success: true };
-  }
-});
-
-await babayaga.start();
-```
-
-## Architecture
-
-BabaYaga uses a unified architecture that consolidates all functionality into a single MCP server:
-
-- **Single Process**: No subprocess management or IPC complexity
-- **Direct Control**: Puppeteer runs in the same process as the MCP server
-- **Modular Tools**: Tools are organized by capability and easy to extend
-- **Smart Features**: Automatic handling of MCP limitations (like token limits)
-
-See [docs/unified-architecture-design.md](docs/unified-architecture-design.md) for detailed architecture documentation.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 ## License
 
-MIT - See [LICENSE](LICENSE) for details.
+- **Playwright MCP**: Apache 2.0 (Microsoft)
+- **Babayaga QA**: MIT
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Test your changes with `.mcp.json` configuration
+4. Submit a pull request

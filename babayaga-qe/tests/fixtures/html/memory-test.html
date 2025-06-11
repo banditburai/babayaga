@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Memory Test Page</title>
+    <style>
+        body { padding: 20px; font-family: Arial; }
+        .container { margin: 20px 0; }
+        .element { 
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        #stats {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #333;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Leak Test Page</h1>
+    
+    <div id="stats">
+        <div>Elements: <span id="count">10</span></div>
+        <div>Memory: <span id="memory">-</span></div>
+        <div>Operations: <span id="ops">0</span></div>
+    </div>
+    
+    <div class="container" id="static-elements">
+        <h2>Static Elements (Don't Change)</h2>
+        <div class="element" id="static-1">Static 1</div>
+        <div class="element" id="static-2">Static 2</div>
+        <div class="element" id="static-3">Static 3</div>
+        <div class="element" id="static-4">Static 4</div>
+        <div class="element" id="static-5">Static 5</div>
+    </div>
+    
+    <div class="container" id="dynamic-elements">
+        <h2>Dynamic Elements (Change Every 5 Seconds)</h2>
+        <div id="dynamic-container"></div>
+    </div>
+    
+    <script>
+        let operationCount = 0;
+        
+        // Update memory stats if available
+        function updateStats() {
+            operationCount++;
+            document.getElementById('ops').textContent = operationCount;
+            
+            if (performance.memory) {
+                const mb = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+                document.getElementById('memory').textContent = mb + ' MB';
+            }
+        }
+        
+        // Create dynamic elements
+        function createDynamicElements() {
+            const container = document.getElementById('dynamic-container');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 5; i++) {
+                const elem = document.createElement('div');
+                elem.className = 'element';
+                elem.id = `dynamic-${i}`;
+                elem.textContent = `Dynamic ${i} (${new Date().toLocaleTimeString()})`;
+                container.appendChild(elem);
+            }
+            
+            updateStats();
+        }
+        
+        // Initial creation
+        createDynamicElements();
+        
+        // Recreate every 5 seconds
+        setInterval(createDynamicElements, 5000);
+        
+        // Update stats every second
+        setInterval(updateStats, 1000);
+    </script>
+</body>
+</html>

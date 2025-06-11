@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edge Case Test Page</title>
+    <style>
+        body { padding: 20px; font-family: Arial; }
+        
+        /* Shadow DOM host */
+        .shadow-host {
+            padding: 20px;
+            border: 2px solid blue;
+            margin: 20px 0;
+        }
+        
+        /* SVG styles */
+        .svg-container {
+            margin: 20px 0;
+        }
+        
+        /* Canvas */
+        #myCanvas {
+            border: 1px solid black;
+            margin: 20px 0;
+        }
+        
+        /* Extremely long selector test */
+        .level1 > .level2 > .level3 > .level4 > .level5 > .level6 > .level7 > .level8 > .level9 > .level10 {
+            background: yellow;
+            padding: 10px;
+        }
+        
+        /* Animation test */
+        @keyframes slide {
+            from { transform: translateX(0); }
+            to { transform: translateX(100px); }
+        }
+        .animated {
+            animation: slide 2s infinite alternate;
+            background: green;
+            color: white;
+            padding: 10px;
+            width: 100px;
+        }
+        
+        /* Pseudo-elements */
+        .pseudo-test::before {
+            content: "BEFORE: ";
+            color: red;
+        }
+        .pseudo-test::after {
+            content: " :AFTER";
+            color: blue;
+        }
+        
+        /* Very small elements */
+        .one-pixel {
+            width: 1px;
+            height: 1px;
+            background: red;
+        }
+        
+        /* Negative margins */
+        .negative-margin {
+            margin: -20px;
+            padding: 30px;
+            background: orange;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edge Case Tests</h1>
+    
+    <!-- Shadow DOM -->
+    <div class="shadow-host" id="shadow-host">
+        <p>Shadow DOM Host</p>
+    </div>
+    
+    <!-- iframe -->
+    <iframe id="test-iframe" width="300" height="100" srcdoc="<p id='iframe-content'>Content inside iframe</p>"></iframe>
+    
+    <!-- SVG -->
+    <svg class="svg-container" width="200" height="100">
+        <rect id="svg-rect" x="10" y="10" width="80" height="50" fill="blue"/>
+        <text id="svg-text" x="20" y="40" fill="white">SVG Text</text>
+    </svg>
+    
+    <!-- Canvas -->
+    <canvas id="myCanvas" width="200" height="100"></canvas>
+    
+    <!-- Deep nesting -->
+    <div class="level1">
+        <div class="level2">
+            <div class="level3">
+                <div class="level4">
+                    <div class="level5">
+                        <div class="level6">
+                            <div class="level7">
+                                <div class="level8">
+                                    <div class="level9">
+                                        <div class="level10" id="deeply-nested">
+                                            Deeply Nested Element
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Animated element -->
+    <div class="animated" id="animated">Animated</div>
+    
+    <!-- Pseudo elements -->
+    <div class="pseudo-test" id="pseudo-test">Main Content</div>
+    
+    <!-- Edge case sizes -->
+    <div class="one-pixel" id="one-pixel"></div>
+    
+    <!-- Negative margin -->
+    <div class="negative-margin" id="negative-margin">Negative Margin</div>
+    
+    <script>
+        // Add shadow DOM
+        const shadowHost = document.getElementById('shadow-host');
+        const shadowRoot = shadowHost.attachShadow({mode: 'open'});
+        shadowRoot.innerHTML = '<style>p { color: purple; }</style><p id="shadow-content">Content in Shadow DOM</p>';
+        
+        // Draw on canvas
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'red';
+        ctx.fillRect(20, 20, 50, 50);
+        ctx.fillStyle = 'black';
+        ctx.fillText('Canvas Text', 10, 90);
+    </script>
+</body>
+</html>

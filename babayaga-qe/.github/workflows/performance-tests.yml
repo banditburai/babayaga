@@ -1,0 +1,244 @@
+name: Performance Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run performance tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - integration
+          - stress
+          - production
+
+jobs:
+  performance-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        browser: [chromium, chrome, edge]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: |
+        npm ci
+        cd babayaga-qe && npm ci
+    
+    - name: Install browsers
+      run: |
+        if [ "${{ matrix.browser }}" = "chromium" ]; then
+          npx playwright install chromium
+        elif [ "${{ matrix.browser }}" = "chrome" ]; then
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+          apt-get update && apt-get install -y google-chrome-stable
+        elif [ "${{ matrix.browser }}" = "edge" ]; then
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+          echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list
+          apt-get update && apt-get install -y microsoft-edge-stable
+        fi
+    
+    - name: Setup test environment
+      run: |
+        # Start Xvfb for headless testing
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+        
+        # Start test server
+        cd babayaga-qe
+        npm run build
+        
+    - name: Start browser with CDP
+      run: |
+        if [ "${{ matrix.browser }}" = "chromium" ]; then
+          chromium --remote-debugging-port=9222 --no-sandbox --disable-setuid-sandbox &
+        elif [ "${{ matrix.browser }}" = "chrome" ]; then
+          google-chrome-stable --remote-debugging-port=9222 --no-sandbox --disable-setuid-sandbox &
+        elif [ "${{ matrix.browser }}" = "edge" ]; then
+          microsoft-edge-stable --remote-debugging-port=9222 --no-sandbox --disable-setuid-sandbox &
+        fi
+        
+        # Wait for browser to start
+        sleep 5
+        
+        # Verify CDP endpoint
+        curl -s http://localhost:9222/json/version || exit 1
+    
+    - name: Run performance tests
+      run: |
+        cd babayaga-qe
+        
+        # Set performance test configuration
+        export PERF_TEST_SUITE="${{ github.event.inputs.test_suite || 'all' }}"
+        export PERF_TEST_BROWSER="${{ matrix.browser }}"
+        export PERF_TEST_ITERATIONS=10
+        export PERF_TEST_WARMUP=2
+        
+        # Run tests with timeout
+        timeout 45m npm run test:performance
+      env:
+        CDP_URL: http://localhost:9222
+        NODE_ENV: test
+        LOG_LEVEL: info
+    
+    - name: Upload performance metrics
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-metrics-${{ matrix.node-version }}-${{ matrix.browser }}
+        path: |
+          babayaga-qe/performance-results/*.json
+          babayaga-qe/performance-results/*.html
+        retention-days: 30
+    
+    - name: Analyze performance regression
+      if: github.event_name == 'pull_request'
+      run: |
+        cd babayaga-qe
+        
+        # Download baseline metrics from main branch
+        gh run download -n performance-baseline || echo "No baseline found"
+        
+        # Compare with current results
+        node scripts/analyze-performance-regression.js \
+          --baseline ./performance-baseline/metrics.json \
+          --current ./performance-results/metrics.json \
+          --threshold 10
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Comment PR with performance results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Read performance results
+          const resultsPath = path.join('babayaga-qe', 'performance-results', 'summary.json');
+          if (!fs.existsSync(resultsPath)) {
+            console.log('No performance results found');
+            return;
+          }
+          
+          const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+          
+          // Format comment
+          const comment = `## Performance Test Results
+          
+          **Browser:** ${{ matrix.browser }}
+          **Node Version:** ${{ matrix.node-version }}
+          
+          ### Summary
+          - Total Tests: ${results.summary.totalTests}
+          - Success Rate: ${((results.summary.totalSuccess / (results.summary.totalSuccess + results.summary.totalErrors)) * 100).toFixed(2)}%
+          - Average Response Time: ${results.summary.averageResponseTime.toFixed(2)}ms
+          - Max Response Time: ${results.summary.maxResponseTime.toFixed(2)}ms
+          
+          ### Critical Metrics
+          | Test | Response Time | Memory Usage | Error Rate |
+          |------|---------------|--------------|------------|
+          ${results.tests.slice(0, 5).map(t => 
+            `| ${t.name} | ${t.responseTime} | ${t.memoryUsed} | ${t.errorRate} |`
+          ).join('\n')}
+          
+          <details>
+          <summary>View all results</summary>
+          
+          \`\`\`json
+          ${JSON.stringify(results, null, 2)}
+          \`\`\`
+          
+          </details>`;
+          
+          // Post comment
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+    
+    - name: Store baseline metrics
+      if: github.ref == 'refs/heads/main' && matrix.browser == 'chromium' && matrix.node-version == '20.x'
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-baseline
+        path: babayaga-qe/performance-results/metrics.json
+        retention-days: 90
+    
+    - name: Send alerts for performance degradation
+      if: failure() && github.ref == 'refs/heads/main'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Performance Degradation Detected - ${new Date().toISOString().split('T')[0]}`,
+            body: `Performance tests failed on main branch.
+            
+            **Browser:** ${{ matrix.browser }}
+            **Node Version:** ${{ matrix.node-version }}
+            
+            [View Failed Run](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            
+            Please investigate immediately.`,
+            labels: ['performance', 'urgent', 'automated']
+          });
+
+  performance-dashboard:
+    needs: performance-tests
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: ./artifacts
+    
+    - name: Generate performance dashboard
+      run: |
+        cd babayaga-qe
+        npm ci
+        
+        # Aggregate all metrics
+        node scripts/generate-performance-dashboard.js \
+          --input ../artifacts \
+          --output ./performance-dashboard
+    
+    - name: Deploy dashboard to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./babayaga-qe/performance-dashboard
+        destination_dir: performance/${{ github.run_number }}

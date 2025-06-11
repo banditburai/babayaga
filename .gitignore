@@ -1,23 +1,27 @@
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.pnpm-store/
 
 # Build outputs
 dist/
 build/
-out/
 *.tsbuildinfo
 
-# IDE files
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -25,33 +29,31 @@ out/
 *~
 .DS_Store
 
-# CDP output and temp files
-cdp-output/
-screenshots/
-temp/
-tmp/
-
-# Test coverage
+# Testing
 coverage/
 .nyc_output/
 
-# Logs
-logs/
-*.log
-*-audit.json
+# MCP
+.mcp.json
+cdp-output/
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# Claude
+.claude/
 
-# Chrome user data
-chrome-user-data/
+# Temporary files
+*.tmp
+*.temp
+.cache/
 
-# MCP server specific
-.mcp-cache/
-mcp-logs/
-.mcp.jsonworktrees/
+# Honeypot test data
+babayaga-honeypot/data/evidence/
+babayaga-honeypot/data/sessions/
+babayaga-honeypot/data/reports/
+babayaga-honeypot/babayaga-honeypot/
+babayaga-honeypot/errors.txt
+babayaga-honeypot/response.txt
 
-worktrees/
+BABAYAGA_ECOSYSTEM_PLAN.md
+
+# Scratchpad/draft content
+scratchpad/
