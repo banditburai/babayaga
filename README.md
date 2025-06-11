@@ -23,15 +23,11 @@ A comprehensive suite of browser testing and quality assurance tools using Chrom
 ### 1. Clone and Install Dependencies
 
 ```bash
-# Install Playwright MCP dependencies
-cd playwright-mcp
-npm install
-npm run build
+# Install all dependencies (from root directory)
+pnpm install
 
-# Install Babayaga QA dependencies  
-cd ../babayaga-qe
-npm install
-npm run build
+# Build all packages
+pnpm run build
 ```
 
 ### 2. Configure MCP Servers
@@ -164,10 +160,10 @@ For CDP-based tools (Babayaga QA):
 
 ```bash
 # Test Playwright MCP
-cd playwright-mcp && npm test
+cd playwright-mcp && pnpm test
 
 # Test Babayaga QA
-cd babayaga-qe && npm run typecheck
+cd babayaga-qe && pnpm run typecheck
 ```
 
 ## License
